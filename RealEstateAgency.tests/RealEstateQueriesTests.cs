@@ -2,15 +2,24 @@
 
 namespace RealEstateAgency.Tests;
 
+/// <summary>
+/// LINQ query tests for a real estate agency
+/// </summary>
 public class RealEstateQueriesTests
 {
     private readonly RealEstateTestFixture _fixture;
 
+    /// <summary>
+    /// Initializes the test data before each test
+    /// </summary>
     public RealEstateQueriesTests()
     {
         _fixture = new RealEstateTestFixture();
     }
 
+    /// <summary>
+    /// The test for the request: "Withdraw all sellers who submitted applications for a specified period"
+    /// </summary>
     [Fact]
     public void GetSellersInPeriod_ReturnsCorrectSellers()
     {
@@ -37,6 +46,9 @@ public class RealEstateQueriesTests
         Assert.Equal(expectedSellers.Count, actualSellers.Count);
     }
 
+    /// <summary>
+    /// The test for the request: "Bring out the top 5 clients by the number of requests (separately for purchase and sale)"
+    /// </summary>
     [Fact]
     public void Top5ClientsByRequestCount_ReturnsSeparateTop5()
     {
@@ -72,6 +84,9 @@ public class RealEstateQueriesTests
         Assert.True(topSaleClients.Count <= 5);
     }
 
+    /// <summary>
+    /// The test for the request: "Display information on the number of applications for each type of property"
+    /// </summary>
     [Fact]
     public void RequestCountByPropertyType_ReturnsStatistics()
     {
@@ -99,6 +114,9 @@ public class RealEstateQueriesTests
         Assert.Equal(expectedStatistics.Count, actualStatistics.Count);
     }
 
+    /// <summary>
+    /// The test for the request: "Display information about clients who have opened applications with a minimum cost"
+    /// </summary>
     [Fact]
     public void ClientsWithMinAmount_AreFoundCorrectly()
     {
@@ -125,6 +143,9 @@ public class RealEstateQueriesTests
         Assert.Equal(expectedClients.Count, actualClients.Count);
     }
 
+    /// <summary>
+    /// The test for the request: "Display information about all clients looking for a given type of property, sort by full name"
+    /// </summary>
     [Fact]
     public void ClientsSeekingPropertyType_AreReturnedOrdered()
     {

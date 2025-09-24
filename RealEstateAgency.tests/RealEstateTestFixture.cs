@@ -3,12 +3,19 @@ using RealEstateAgency.Domain.Enums;
 
 namespace RealEstateAgency.Tests;
 
+/// <summary>
+/// The fixture for the real estate agency's test data
+/// It contains collections of counterparties, real estate objects, and applications
+/// </summary>
 public class RealEstateTestFixture
 {
     public List<Counterparty> Counterparties { get; }
     public List<RealEstateProperty> Properties { get; }
     public List<Request> Requests { get; }
 
+    /// <summary>
+    /// Initializes the test data
+    /// </summary>
     public RealEstateTestFixture()
     {
         Counterparties = GenerateCounterparties();
@@ -16,6 +23,9 @@ public class RealEstateTestFixture
         Requests = GenerateRequests(Counterparties, Properties);
     }
 
+    /// <summary>
+    /// Generates test counterparties
+    /// </summary>
     private List<Counterparty> GenerateCounterparties()
     {
         return new List<Counterparty>
@@ -35,6 +45,9 @@ public class RealEstateTestFixture
         };
     }
 
+    /// <summary>
+    /// Generates test properties
+    /// </summary>
     private List<RealEstateProperty> GenerateProperties()
     {
         return new List<RealEstateProperty>
@@ -215,6 +228,10 @@ public class RealEstateTestFixture
         }
     };
     }
+
+    /// <summary>
+    /// Generates test applications and connects them with contractors and facilities
+    /// </summary>
     private List<Request> GenerateRequests(List<Counterparty> counterparties, List<RealEstateProperty> properties)
     {
         return new List<Request>
