@@ -14,6 +14,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Debug - Check solution file content
+      run: |
+        echo "=== Solution file content ==="
+        cat RealEstateAgency.sln
+        echo "=== Tests directory files ==="
+        ls -la RealEstateAgency.tests/
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -26,4 +33,4 @@ jobs:
       run: dotnet build ./RealEstateAgency.sln --no-restore 
 
     - name: Run tests
-      run: dotnet test ./RealEstateAgency.tests/RealEstateAgency.tests.csproj --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal
