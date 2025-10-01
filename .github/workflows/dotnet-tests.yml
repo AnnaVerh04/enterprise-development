@@ -1,4 +1,4 @@
-name: .NET Tests
+name: .NET Tests Simple
 
 on:
   push:
@@ -7,30 +7,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Debug - Exact solution content
-      run: |
-        echo "=== Exact solution file content ==="
-        cat -A RealEstateAgency.sln
-        echo "=== Tests directory exact listing ==="
-        ls -la RealEstateAgency.tests/ | cat -A
-
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x' 
-
-    - name: Restore dependencies
-      run: dotnet restore ./RealEstateAgency.sln
-
-    - name: Build 
-      run: dotnet build ./RealEstateAgency.sln --no-restore 
-
-    - name: Run tests
-      run: dotnet test --no-build --verbosity normal
+        dotnet-version: 8.0.x
+    
+    - name: Run tests directly
+      run: |
+        cd RealEstateAgency.tests
+        dotnet restore
+        dotnet build
+        dotnet test --verbosity normal
