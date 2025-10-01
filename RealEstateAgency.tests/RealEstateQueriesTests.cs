@@ -7,8 +7,6 @@ namespace RealEstateAgency.Tests;
 /// </summary>
 public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixture<RealEstateTestFixture>
 {
-    private readonly RealEstateTestFixture _fixture = fixture;
-
     /// <summary>
     /// The test for the request: "Withdraw all sellers who submitted applications for a specified period"
     /// </summary>
@@ -25,7 +23,7 @@ public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixtu
             "Семенова Ольга Игоревна"
         ];
 
-        var actualSellers = _fixture.Requests
+        var actualSellers = fixture.Requests
             .Where(r => r.Type == RequestType.Sale &&
                         r.Date >= startDate &&
                         r.Date <= endDate)
@@ -60,7 +58,7 @@ public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixtu
         "Орлова Екатерина Дмитриевна"  
         ];
 
-        var topPurchaseClients = _fixture.Requests
+        var topPurchaseClients = fixture.Requests
             .Where(r => r.Type == RequestType.Purchase)
             .GroupBy(r => r.Counterparty)
             .Select(g => new { Counterparty = g.Key, Count = g.Count() })
@@ -70,7 +68,7 @@ public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixtu
             .Select(x => x.Counterparty.FullName)
             .ToList();
 
-        var topSaleClients = _fixture.Requests
+        var topSaleClients = fixture.Requests
             .Where(r => r.Type == RequestType.Sale)
             .GroupBy(r => r.Counterparty)
             .Select(g => new { Counterparty = g.Key, Count = g.Count() })
@@ -100,7 +98,7 @@ public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixtu
             [PropertyType.Warehouse] = 2
         };
 
-        var actualStatistics = _fixture.Requests
+        var actualStatistics = fixture.Requests
             .GroupBy(r => r.Property.Type)
             .Select(g => new { PropertyType = g.Key, RequestCount = g.Count() })
             .OrderBy(x => x.PropertyType)
@@ -124,8 +122,8 @@ public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixtu
         var expectedMinAmount = 1500000.00m;
         List<string> expectedClients = ["Зайцева Наталья Петровна"];
 
-        var minAmount = _fixture.Requests.Min(r => r.Amount);
-        var actualClients = _fixture.Requests
+        var minAmount = fixture.Requests.Min(r => r.Amount);
+        var actualClients = fixture.Requests
             .Where(r => r.Amount == minAmount)
             .Select(r => r.Counterparty.FullName)
             .Distinct()
@@ -148,7 +146,7 @@ public class RealEstateQueriesTests(RealEstateTestFixture fixture) : IClassFixtu
             "Сидоров Алексей Петрович"
         ];
 
-        var actualClients = _fixture.Requests
+        var actualClients = fixture.Requests
             .Where(r => r.Type == RequestType.Purchase &&
                         r.Property.Type == targetType)
             .Select(r => r.Counterparty.FullName)
