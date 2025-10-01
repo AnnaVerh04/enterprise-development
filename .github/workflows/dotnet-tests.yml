@@ -14,12 +14,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Debug - Check solution file content
+    - name: Debug - Exact solution content
       run: |
-        echo "=== Solution file content ==="
-        cat RealEstateAgency.sln
-        echo "=== Tests directory files ==="
-        ls -la RealEstateAgency.tests/
+        echo "=== Exact solution file content ==="
+        cat -A RealEstateAgency.sln
+        echo "=== Tests directory exact listing ==="
+        ls -la RealEstateAgency.tests/ | cat -A
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
