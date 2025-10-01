@@ -20,10 +20,10 @@ jobs:
         dotnet-version: '8.0.x' 
 
     - name: Restore dependencies
-      run: dotnet restore  
+      run: dotnet restore ./RealEstateAgency.sln
 
-    - name: Build solution
-      run: dotnet build --no-restore --configuration Release
+    - name: Build 
+      run: dotnet build ./RealEstateAgency.sln --no-restore 
 
     - name: Run tests
-      run: dotnet test --no-build --verbosity normal --configuration Release
+      run: dotnet test ./RealEstateAgency.tests/RealEstateAgency.tests.csproj --no-build --verbosity normal
