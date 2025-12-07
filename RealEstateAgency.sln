@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstateAgency.Domain", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstateAgency.Tests", "RealEstateAgency.tests\RealEstateAgency.Tests.csproj", "{7765762D-A8C1-45D9-B0B4-78F8B9113164}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstateAgency.WebApi", "RealEstateAgency.WebApi\RealEstateAgency.WebApi.csproj", "{A5622F52-8268-4A23-BAA9-14E126720CCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7765762D-A8C1-45D9-B0B4-78F8B9113164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7765762D-A8C1-45D9-B0B4-78F8B9113164}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7765762D-A8C1-45D9-B0B4-78F8B9113164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5622F52-8268-4A23-BAA9-14E126720CCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5622F52-8268-4A23-BAA9-14E126720CCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5622F52-8268-4A23-BAA9-14E126720CCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5622F52-8268-4A23-BAA9-14E126720CCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
