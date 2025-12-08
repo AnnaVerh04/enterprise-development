@@ -1,13 +1,17 @@
 using System.Text.Json.Serialization;
+using RealEstateAgency.WebApi.Mapping;
 using RealEstateAgency.WebApi.Repositories;
-
+using RealEstateAgency.WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Регистрация репозиториев (In-Memory для Лаб 2)
+// Регистрация репозиториев (In-Memory)
 builder.Services.AddSingleton<ICounterpartyRepository, InMemoryCounterpartyRepository>();
 builder.Services.AddSingleton<IRealEstatePropertyRepository, InMemoryRealEstatePropertyRepository>();
 builder.Services.AddSingleton<IRequestRepository, InMemoryRequestRepository>();
+
+// Регистрация сервиса аналитики
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 // Add services to the container
 builder.Services.AddControllers()
@@ -15,6 +19,9 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -44,14 +51,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Real Estate Agency API v1");
-        options.RoutePrefix = string.Empty;  // Swagger UI на корневом URL
+        options.RoutePrefix = string.Empty;  
     });
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
+app.MapControllers();  
 
 app.Run();
 
-// Для интеграционных тестов (если будут)
 public partial class Program { }
