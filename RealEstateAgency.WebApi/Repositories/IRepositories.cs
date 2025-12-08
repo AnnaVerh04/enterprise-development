@@ -7,11 +7,11 @@ namespace RealEstateAgency.WebApi.Repositories;
 /// </summary>
 public interface ICounterpartyRepository
 {
-    IEnumerable<Counterparty> GetAll();
-    Counterparty? GetById(int id);
-    Counterparty Add(Counterparty counterparty);
-    Counterparty? Update(int id, Counterparty counterparty);
-    bool Delete(int id);
+    public IEnumerable<Counterparty> GetAll();
+    public Counterparty? GetById(int id);
+    public Counterparty Add(Counterparty counterparty);
+    public Counterparty? Update(int id, Counterparty counterparty);
+    public bool Delete(int id);
 }
 
 /// <summary>
@@ -19,11 +19,11 @@ public interface ICounterpartyRepository
 /// </summary>
 public interface IRealEstatePropertyRepository
 {
-    IEnumerable<RealEstateProperty> GetAll();
-    RealEstateProperty? GetById(int id);
-    RealEstateProperty Add(RealEstateProperty property);
-    RealEstateProperty? Update(int id, RealEstateProperty property);
-    bool Delete(int id);
+    public IEnumerable<RealEstateProperty> GetAll();
+    public RealEstateProperty? GetById(int id);
+    public RealEstateProperty Add(RealEstateProperty property);
+    public RealEstateProperty? Update(int id, RealEstateProperty property);
+    public bool Delete(int id);
 }
 
 /// <summary>
@@ -31,9 +31,9 @@ public interface IRealEstatePropertyRepository
 /// </summary>
 public interface IRequestRepository
 {
-    IEnumerable<Request> GetAll();
-    Request? GetById(int id);
-    Request Add(Request request);
-    Request? Update(int id, Request request);
-    bool Delete(int id);
+    public IEnumerable<Request> GetAll();
+    public Request? GetById(int id);
+    public Request Add(Request request);
+    public Request? Update(int id, Request request);
+    public bool Delete(int id);
 }
