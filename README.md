@@ -29,4 +29,34 @@
 * ClientsWithMinAmountAreFoundCorrectly() - Клиенты с заявками минимальной стоимости
 * ClientsSeekingPropertyTypeAreReturnedOrdered() - Поиск клиентов по типу недвижимости с сортировкой
 
+### RealEstateAgency.WebApi
+Основной Web API проект с REST эндпоинтами и бизнес-логикой.
+
+#### Контроллеры
+**CounterpartiesController** - CRUD операции для управления контрагентами
+**PropertiesController** - CRUD операции для управления объектами недвижимости
+**RequestsController** - CRUD операции для управления заявками
+**AnalyticsController** - аналитические запросы для бизнес-анализа
+
+#### Сервисы
+**AnalyticsService** - сервис для выполнения сложных аналитических запросов
+**DatabaseSeeder** - сервис для инициализации базы данных тестовыми данными
+
+#### Репозитории
+**In-Memory** реализации для локальной разработки и тестирования
+**MongoDB** реализации для production использования
+
+#### DTO 
+Отдельные классы для создания, обновления и чтения каждой сущности
+
+#### RealEstateAgency.ServiceDefaults
+**Назначение**: Общие настройки и конфигурации для всех сервисов в экосистеме .NET Aspire.
+
+#### RealEstateAgency.AppHost
+**Назначение**: Оркестратор приложения, который управляет запуском всех компонентов (Web API и MongoDB) через .NET Aspire.
+
+#### RealEstateAgency.WebApi.Tests
+**Назначение**: Интеграционные тесты для проверки REST API эндпоинтов.
+
+
 
