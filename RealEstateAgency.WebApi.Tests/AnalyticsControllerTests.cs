@@ -1,13 +1,11 @@
-using System.Net.Http.Json;
+using RealEstateAgency.Contracts.Dto;
 using RealEstateAgency.Domain.Enums;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
+using System.Net.Http.Json;
 
 namespace RealEstateAgency.WebApi.Tests;
 
 /// <summary>
 /// Тесты аналитических запросов
-/// Проверяют соответствие результатов API ожидаемым значениям из Unit-тестов первой лабораторной
 /// </summary>
 public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFactory>
 {
@@ -19,8 +17,7 @@ public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFa
     }
 
     /// <summary>
-    /// Тест запроса: "Вывести всех продавцов, подавших заявки за указанный период"
-    /// Ожидаемый результат из RealEstateQueriesTests.GetSellersInPeriodReturnsCorrectSellers()
+    /// Тест: Вывести всех продавцов за указанный период
     /// </summary>
     [Fact]
     public async Task GetSellersInPeriod_ReturnsCorrectSellers()
@@ -47,8 +44,7 @@ public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFa
     }
 
     /// <summary>
-    /// Тест запроса: "Вывести топ-5 клиентов по количеству заявок (отдельно покупка/продажа)"
-    /// Ожидаемый результат из RealEstateQueriesTests.Top5ClientsByRequestCountReturnsSeparateTop5()
+    /// Тест: Вывести топ-5 клиентов по количеству заявок
     /// </summary>
     [Fact]
     public async Task GetTop5Clients_ReturnsCorrectTop5()
@@ -87,8 +83,7 @@ public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFa
     }
 
     /// <summary>
-    /// Тест запроса: "Вывести информацию о количестве заявок по каждому типу недвижимости"
-    /// Ожидаемый результат из RealEstateQueriesTests.RequestCountByPropertyTypeReturnsCorrectStatistics()
+    /// Тест: Вывести статистику заявок по типам недвижимости
     /// </summary>
     [Fact]
     public async Task GetPropertyTypeStatistics_ReturnsCorrectStatistics()
@@ -120,8 +115,7 @@ public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFa
     }
 
     /// <summary>
-    /// Тест запроса: "Вывести информацию о клиентах, открывших заявки с минимальной стоимостью"
-    /// Ожидаемый результат из RealEstateQueriesTests.ClientsWithMinAmountAreFoundCorrectly()
+    /// Тест: Вывести клиентов с минимальной суммой заявки
     /// </summary>
     [Fact]
     public async Task GetClientsWithMinAmount_ReturnsCorrectClients()
@@ -141,8 +135,7 @@ public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFa
     }
 
     /// <summary>
-    /// Тест запроса: "Вывести информацию о всех клиентах, ищущих заданный тип недвижимости"
-    /// Ожидаемый результат из RealEstateQueriesTests.ClientsSeekingPropertyTypeAreReturnedOrdered()
+    /// Тест: Вывести клиентов, ищущих заданный тип недвижимости
     /// </summary>
     [Fact]
     public async Task GetClientsByPropertyType_Apartment_ReturnsCorrectClients()

@@ -1,8 +1,7 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using RealEstateAgency.Contracts.Dto;
 using RealEstateAgency.Domain.Enums;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -12,6 +11,9 @@ namespace RealEstateAgency.WebApi.Tests;
 public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFactory>
 {
     private readonly HttpClient _client;
+    private static readonly Guid _testRequestId = Guid.Parse("20000000-0000-0000-0000-000000000001");
+    private static readonly Guid _testCounterpartyId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private static readonly Guid _testPropertyId = Guid.Parse("10000000-0000-0000-0000-000000000001");
 
     public RequestsControllerTests(RealEstateWebApplicationFactory factory)
     {
@@ -31,7 +33,7 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(requests);
-        Assert.True(requests.Count >= 15); 
+        Assert.True(requests.Count >= 15);
     }
 
     /// <summary>
@@ -40,14 +42,14 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
     [Fact]
     public async Task GetById_ExistingId_ReturnsRequest()
     {
-        var response = await _client.GetAsync("/api/requests/1");
+        var response = await _client.GetAsync($"/api/requests/{_testRequestId}");
 
         response.EnsureSuccessStatusCode();
         var request = await response.Content.ReadFromJsonAsync<RequestDto>(
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(request);
-        Assert.Equal(1, request.Id);
+        Assert.Equal(_testRequestId, request.Id);
         Assert.Equal(RequestType.Sale, request.Type);
         Assert.Equal(25000000.00m, request.Amount);
     }
@@ -58,7 +60,7 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
     [Fact]
     public async Task GetById_NonExistingId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/requests/999");
+        var response = await _client.GetAsync($"/api/requests/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -71,8 +73,8 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
     {
         var newRequest = new CreateRequestDto
         {
-            CounterpartyId = 1,
-            PropertyId = 1,
+            CounterpartyId = _testCounterpartyId,
+            PropertyId = _testPropertyId,
             Type = RequestType.Purchase,
             Amount = 30000000.00m,
             Date = new DateTime(2024, 10, 15)
@@ -85,7 +87,7 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(created);
-        Assert.True(created.Id > 0);
+        Assert.NotEqual(Guid.Empty, created.Id);
         Assert.Equal(30000000.00m, created.Amount);
     }
 
@@ -97,8 +99,8 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
     {
         var newRequest = new CreateRequestDto
         {
-            CounterpartyId = 999,
-            PropertyId = 1,
+            CounterpartyId = Guid.NewGuid(),
+            PropertyId = _testPropertyId,
             Type = RequestType.Sale,
             Amount = 1000000.00m,
             Date = DateTime.Now
@@ -117,14 +119,14 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
     {
         var updateData = new UpdateRequestDto
         {
-            CounterpartyId = 1,
-            PropertyId = 1,
+            CounterpartyId = _testCounterpartyId,
+            PropertyId = _testPropertyId,
             Type = RequestType.Sale,
             Amount = 26000000.00m,
             Date = new DateTime(2024, 1, 15)
         };
 
-        var response = await _client.PutAsJsonAsync("/api/requests/1", updateData);
+        var response = await _client.PutAsJsonAsync($"/api/requests/{_testRequestId}", updateData);
 
         response.EnsureSuccessStatusCode();
         var updated = await response.Content.ReadFromJsonAsync<RequestDto>(
@@ -142,8 +144,8 @@ public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFac
     {
         var newRequest = new CreateRequestDto
         {
-            CounterpartyId = 1,
-            PropertyId = 1,
+            CounterpartyId = _testCounterpartyId,
+            PropertyId = _testPropertyId,
             Type = RequestType.Purchase,
             Amount = 100.00m,
             Date = DateTime.Now

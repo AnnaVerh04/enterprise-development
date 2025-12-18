@@ -1,7 +1,6 @@
-﻿using System.Net;
+﻿using RealEstateAgency.Contracts.Dto;
+using System.Net;
 using System.Net.Http.Json;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -37,7 +36,7 @@ public class MongoCounterpartiesTests : IClassFixture<MongoDbWebApplicationFacto
         var created = await createResponse.Content.ReadFromJsonAsync<CounterpartyDto>(
             RealEstateWebApplicationFactory.JsonOptions);
         Assert.NotNull(created);
-        Assert.True(created.Id > 0);
+        Assert.NotEqual(Guid.Empty, created.Id);
         Assert.Equal("Тестов Тест Тестович (MongoDB)", created.FullName);
 
         var createdId = created.Id;

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using RealEstateAgency.WebApi.Repositories;
+using RealEstateAgency.Domain.Interfaces;
+using RealEstateAgency.Infrastructure.Persistence;
+using RealEstateAgency.Infrastructure.Repositories;
 using Testcontainers.MongoDb;
-using Xunit;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -23,12 +25,15 @@ public class MongoDbWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     {
         builder.ConfigureServices(services =>
         {
+            // Удаляем существующие регистрации
             var descriptorsToRemove = services
                 .Where(d => d.ServiceType == typeof(ICounterpartyRepository) ||
                             d.ServiceType == typeof(IRealEstatePropertyRepository) ||
                             d.ServiceType == typeof(IRequestRepository) ||
                             d.ServiceType == typeof(IMongoClient) ||
-                            d.ServiceType == typeof(IMongoDatabase))
+                            d.ServiceType == typeof(IMongoDatabase) ||
+                            d.ServiceType == typeof(RealEstateDbContext) ||
+                            d.ServiceType == typeof(DbContextOptions<RealEstateDbContext>))
                 .ToList();
 
             foreach (var descriptor in descriptorsToRemove)
@@ -36,15 +41,20 @@ public class MongoDbWebApplicationFactory : WebApplicationFactory<Program>, IAsy
                 services.Remove(descriptor);
             }
 
+            // Регистрируем MongoDB клиент
             var mongoClient = new MongoClient(ConnectionString);
-            var database = mongoClient.GetDatabase("realestatedb_test");
-
             services.AddSingleton<IMongoClient>(mongoClient);
-            services.AddSingleton(database);
 
-            services.AddSingleton<ICounterpartyRepository, MongoCounterpartyRepository>();
-            services.AddSingleton<IRealEstatePropertyRepository, MongoRealEstatePropertyRepository>();
-            services.AddSingleton<IRequestRepository, MongoRequestRepository>();
+            // Регистрируем DbContext с MongoDB провайдером
+            services.AddDbContext<RealEstateDbContext>(options =>
+            {
+                options.UseMongoDB(mongoClient, "realestatedb_test");
+            });
+
+            // Регистрируем репозитории
+            services.AddScoped<ICounterpartyRepository, MongoCounterpartyRepository>();
+            services.AddScoped<IRealEstatePropertyRepository, MongoRealEstatePropertyRepository>();
+            services.AddScoped<IRequestRepository, MongoRequestRepository>();
         });
 
         builder.UseEnvironment("Testing");

@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace RealEstateAgency.WebApi.Tests;
+﻿namespace RealEstateAgency.WebApi.Tests;
 
 /// <summary>
 /// Определение коллекции для MongoDB тестов

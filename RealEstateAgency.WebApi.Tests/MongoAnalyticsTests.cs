@@ -1,7 +1,6 @@
-﻿using System.Net.Http.Json;
+﻿using RealEstateAgency.Contracts.Dto;
 using RealEstateAgency.Domain.Enums;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
+using System.Net.Http.Json;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -52,7 +51,7 @@ public class MongoAnalyticsTests : IClassFixture<MongoDbWebApplicationFactory>
             PropertyId = createdProperty!.Id,
             Type = RequestType.Sale,
             Amount = 8000000.00m,
-            Date = new DateTime(2024, 5, 15) 
+            Date = new DateTime(2024, 5, 15)
         };
         await _client.PostAsJsonAsync("/api/requests", saleRequest);
 

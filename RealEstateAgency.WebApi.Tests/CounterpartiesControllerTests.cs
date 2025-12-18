@@ -1,7 +1,6 @@
-﻿using System.Net;
+﻿using RealEstateAgency.Contracts.Dto;
+using System.Net;
 using System.Net.Http.Json;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -11,6 +10,7 @@ namespace RealEstateAgency.WebApi.Tests;
 public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicationFactory>
 {
     private readonly HttpClient _client;
+    private static readonly Guid _testCounterpartyId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
     public CounterpartiesControllerTests(RealEstateWebApplicationFactory factory)
     {
@@ -30,7 +30,7 @@ public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicat
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(counterparties);
-        Assert.True(counterparties.Count >= 12); 
+        Assert.True(counterparties.Count >= 12);
     }
 
     /// <summary>
@@ -39,14 +39,14 @@ public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicat
     [Fact]
     public async Task GetById_ExistingId_ReturnsCounterparty()
     {
-        var response = await _client.GetAsync("/api/counterparties/1");
+        var response = await _client.GetAsync($"/api/counterparties/{_testCounterpartyId}");
 
         response.EnsureSuccessStatusCode();
         var counterparty = await response.Content.ReadFromJsonAsync<CounterpartyDto>(
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(counterparty);
-        Assert.Equal(1, counterparty.Id);
+        Assert.Equal(_testCounterpartyId, counterparty.Id);
         Assert.Equal("Иванов Иван Иванович", counterparty.FullName);
     }
 
@@ -56,7 +56,7 @@ public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicat
     [Fact]
     public async Task GetById_NonExistingId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/counterparties/999");
+        var response = await _client.GetAsync($"/api/counterparties/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -81,7 +81,7 @@ public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicat
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(created);
-        Assert.True(created.Id > 0);
+        Assert.NotEqual(Guid.Empty, created.Id);
         Assert.Equal("Тестов Тест Тестович", created.FullName);
     }
 
@@ -98,7 +98,7 @@ public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicat
             PhoneNumber = "+7-999-111-22-33"
         };
 
-        var response = await _client.PutAsJsonAsync("/api/counterparties/1", updateData);
+        var response = await _client.PutAsJsonAsync($"/api/counterparties/{_testCounterpartyId}", updateData);
 
         response.EnsureSuccessStatusCode();
         var updated = await response.Content.ReadFromJsonAsync<CounterpartyDto>(

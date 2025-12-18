@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using RealEstateAgency.Domain.Models;
-using RealEstateAgency.WebApi.DTOs;
-using RealEstateAgency.WebApi.Repositories;
+﻿using Microsoft.AspNetCore.Mvc;
+using RealEstateAgency.Contracts.Dto;
+using RealEstateAgency.Contracts.Interfaces;
 
 namespace RealEstateAgency.WebApi.Controllers;
 
@@ -11,35 +9,20 @@ namespace RealEstateAgency.WebApi.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class RequestsController : ControllerBase
+public class RequestsController(IRequestService service, ILogger<RequestsController> logger) : ControllerBase
 {
-    private readonly IRequestRepository _requestRepository;
-    private readonly ICounterpartyRepository _counterpartyRepository;
-    private readonly IRealEstatePropertyRepository _propertyRepository;
-    private readonly IMapper _mapper;
-
-    public RequestsController(
-        IRequestRepository requestRepository,
-        ICounterpartyRepository counterpartyRepository,
-        IRealEstatePropertyRepository propertyRepository,
-        IMapper mapper)
-    {
-        _requestRepository = requestRepository;
-        _counterpartyRepository = counterpartyRepository;
-        _propertyRepository = propertyRepository;
-        _mapper = mapper;
-    }
-
     /// <summary>
     /// Получить все заявки
     /// </summary>
     /// <returns>Список заявок</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RequestDto>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<RequestDto>> GetAll()
+    public async Task<ActionResult<IEnumerable<RequestDto>>> GetAll()
     {
-        var requests = _requestRepository.GetAll();
-        return Ok(_mapper.Map<IEnumerable<RequestDto>>(requests));
+        logger.LogInformation("Запрос на получение всех заявок");
+        var requests = await service.GetAllAsync();
+        logger.LogInformation("Возвращено {Count} заявок", requests.Count());
+        return Ok(requests);
     }
 
     /// <summary>
@@ -47,16 +30,20 @@ public class RequestsController : ControllerBase
     /// </summary>
     /// <param name="id">Идентификатор заявки</param>
     /// <returns>Заявка</returns>
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(RequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<RequestDto> GetById(int id)
+    public async Task<ActionResult<RequestDto>> GetById(Guid id)
     {
-        var request = _requestRepository.GetById(id);
+        logger.LogInformation("Запрос на получение заявки с ID {Id}", id);
+        var request = await service.GetByIdAsync(id);
         if (request == null)
+        {
+            logger.LogWarning("Заявка с ID {Id} не найдена", id);
             return NotFound($"Заявка с ID {id} не найдена");
+        }
 
-        return Ok(_mapper.Map<RequestDto>(request));
+        return Ok(request);
     }
 
     /// <summary>
@@ -68,30 +55,25 @@ public class RequestsController : ControllerBase
     [ProducesResponseType(typeof(RequestDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<RequestDto> Create([FromBody] CreateRequestDto dto)
+    public async Task<ActionResult<RequestDto>> Create([FromBody] CreateRequestDto dto)
     {
-        var counterparty = _counterpartyRepository.GetById(dto.CounterpartyId);
-        if (counterparty == null)
-            return NotFound($"Контрагент с ID {dto.CounterpartyId} не найден");
-
-        var property = _propertyRepository.GetById(dto.PropertyId);
-        if (property == null)
-            return NotFound($"Объект недвижимости с ID {dto.PropertyId} не найден");
-
-        var request = new Request
+        if (!ModelState.IsValid)
         {
-            Id = 0,
-            Counterparty = counterparty,
-            Property = property,
-            Type = dto.Type,
-            Amount = dto.Amount,
-            Date = dto.Date
-        };
+            logger.LogWarning("Ошибка валидации при создании заявки: {Errors}", ModelState);
+            return BadRequest(ModelState);
+        }
 
-        var created = _requestRepository.Add(request);
-        var resultDto = _mapper.Map<RequestDto>(created);
+        logger.LogInformation("Создание заявки для контрагента {CounterpartyId}", dto.CounterpartyId);
+        var (result, error) = await service.CreateAsync(dto);
 
-        return CreatedAtAction(nameof(GetById), new { id = resultDto.Id }, resultDto);
+        if (result == null)
+        {
+            logger.LogWarning("Ошибка при создании заявки: {Error}", error);
+            return NotFound(error);
+        }
+
+        logger.LogInformation("Заявка создана с ID {Id}", result.Id);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     /// <summary>
@@ -100,36 +82,29 @@ public class RequestsController : ControllerBase
     /// <param name="id">Идентификатор заявки</param>
     /// <param name="dto">Новые данные заявки</param>
     /// <returns>Результат операции</returns>
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(RequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<RequestDto> Update(int id, [FromBody] UpdateRequestDto dto)
+    public async Task<ActionResult<RequestDto>> Update(Guid id, [FromBody] UpdateRequestDto dto)
     {
-        var existingRequest = _requestRepository.GetById(id);
-        if (existingRequest == null)
-            return NotFound($"Заявка с ID {id} не найдена");
-
-        var counterparty = _counterpartyRepository.GetById(dto.CounterpartyId);
-        if (counterparty == null)
-            return NotFound($"Контрагент с ID {dto.CounterpartyId} не найден");
-
-        var property = _propertyRepository.GetById(dto.PropertyId);
-        if (property == null)
-            return NotFound($"Объект недвижимости с ID {dto.PropertyId} не найден");
-
-        var request = new Request
+        if (!ModelState.IsValid)
         {
-            Id = id,
-            Counterparty = counterparty,
-            Property = property,
-            Type = dto.Type,
-            Amount = dto.Amount,
-            Date = dto.Date
-        };
+            logger.LogWarning("Ошибка валидации при обновлении заявки {Id}: {Errors}", id, ModelState);
+            return BadRequest(ModelState);
+        }
 
-        var updated = _requestRepository.Update(id, request);
-        return Ok(_mapper.Map<RequestDto>(updated));
+        logger.LogInformation("Обновление заявки с ID {Id}", id);
+        var (result, error) = await service.UpdateAsync(id, dto);
+
+        if (result == null)
+        {
+            logger.LogWarning("Ошибка при обновлении заявки {Id}: {Error}", id, error);
+            return NotFound(error);
+        }
+
+        logger.LogInformation("Заявка с ID {Id} успешно обновлена", id);
+        return Ok(result);
     }
 
     /// <summary>
@@ -137,15 +112,20 @@ public class RequestsController : ControllerBase
     /// </summary>
     /// <param name="id">Идентификатор заявки</param>
     /// <returns>Результат операции</returns>
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = _requestRepository.Delete(id);
+        logger.LogInformation("Удаление заявки с ID {Id}", id);
+        var deleted = await service.DeleteAsync(id);
         if (!deleted)
+        {
+            logger.LogWarning("Заявка с ID {Id} не найдена для удаления", id);
             return NotFound($"Заявка с ID {id} не найдена");
+        }
 
+        logger.LogInformation("Заявка с ID {Id} успешно удалена", id);
         return NoContent();
     }
 }

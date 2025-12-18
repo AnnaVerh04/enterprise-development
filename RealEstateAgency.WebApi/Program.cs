@@ -1,12 +1,13 @@
-using System.Text.Json.Serialization;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using RealEstateAgency.Application.Mapping;
+using RealEstateAgency.Application.Services;
+using RealEstateAgency.Contracts.Interfaces;
+using RealEstateAgency.Domain.Interfaces;
+using RealEstateAgency.Infrastructure.Persistence;
+using RealEstateAgency.Infrastructure.Repositories;
 using RealEstateAgency.ServiceDefaults;
-using RealEstateAgency.WebApi.Mapping;
-using RealEstateAgency.WebApi.Repositories;
-using RealEstateAgency.WebApi.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,16 +18,12 @@ if (useMongoDB)
 {
     builder.AddServiceDefaults();
 
-    BsonSerializer.RegisterSerializer(new EnumSerializer<RealEstateAgency.Domain.Enums.PropertyType>(BsonType.String));
-    BsonSerializer.RegisterSerializer(new EnumSerializer<RealEstateAgency.Domain.Enums.PropertyPurpose>(BsonType.String));
-    BsonSerializer.RegisterSerializer(new EnumSerializer<RealEstateAgency.Domain.Enums.RequestType>(BsonType.String));
-
     builder.AddMongoDBClient("realestatedb");
 
-    builder.Services.AddScoped<IMongoDatabase>(sp =>
+    builder.Services.AddDbContext<RealEstateDbContext>((serviceProvider, options) =>
     {
-        var client = sp.GetRequiredService<IMongoClient>();
-        return client.GetDatabase("realestatedb");
+        var mongoClient = serviceProvider.GetRequiredService<IMongoClient>();
+        options.UseMongoDB(mongoClient, "realestatedb");
     });
 
     builder.Services.AddScoped<ICounterpartyRepository, MongoCounterpartyRepository>();
@@ -40,6 +37,11 @@ else
     builder.Services.AddSingleton<IRealEstatePropertyRepository, InMemoryRealEstatePropertyRepository>();
     builder.Services.AddSingleton<IRequestRepository, InMemoryRequestRepository>();
 }
+
+builder.Services.AddScoped<ICounterpartyService, CounterpartyService>();
+builder.Services.AddScoped<IRealEstatePropertyService, RealEstatePropertyService>();
+builder.Services.AddScoped<IRequestService, RequestService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -66,8 +68,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
-builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 var app = builder.Build();
 

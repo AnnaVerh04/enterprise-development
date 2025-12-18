@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using RealEstateAgency.WebApi.Repositories;
+using RealEstateAgency.Domain.Interfaces;
+using RealEstateAgency.Infrastructure.Repositories;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

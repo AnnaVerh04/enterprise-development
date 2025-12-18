@@ -1,8 +1,7 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using RealEstateAgency.Contracts.Dto;
 using RealEstateAgency.Domain.Enums;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -12,6 +11,7 @@ namespace RealEstateAgency.WebApi.Tests;
 public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationFactory>
 {
     private readonly HttpClient _client;
+    private static readonly Guid _testPropertyId = Guid.Parse("10000000-0000-0000-0000-000000000001");
 
     public PropertiesControllerTests(RealEstateWebApplicationFactory factory)
     {
@@ -31,7 +31,7 @@ public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationF
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(properties);
-        Assert.True(properties.Count >= 13); 
+        Assert.True(properties.Count >= 13);
     }
 
     /// <summary>
@@ -40,16 +40,16 @@ public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationF
     [Fact]
     public async Task GetById_ExistingId_ReturnsProperty()
     {
-        var response = await _client.GetAsync("/api/properties/1");
+        var response = await _client.GetAsync($"/api/properties/{_testPropertyId}");
 
         response.EnsureSuccessStatusCode();
         var property = await response.Content.ReadFromJsonAsync<RealEstatePropertyDto>(
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(property);
-        Assert.Equal(1, property.Id);
+        Assert.Equal(_testPropertyId, property.Id);
         Assert.Equal(PropertyType.Apartment, property.Type);
-        Assert.Contains("ул. Тверская, 15, кв. 34", property.Address); 
+        Assert.Contains("ул. Тверская, 15, кв. 34", property.Address);
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationF
     [Fact]
     public async Task GetById_NonExistingId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/properties/999");
+        var response = await _client.GetAsync($"/api/properties/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -90,7 +90,7 @@ public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationF
             RealEstateWebApplicationFactory.JsonOptions);
 
         Assert.NotNull(created);
-        Assert.True(created.Id > 0);
+        Assert.NotEqual(Guid.Empty, created.Id);
         Assert.Equal("ул. Тестовая, 1, кв. 1", created.Address);
     }
 
@@ -114,7 +114,7 @@ public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationF
             HasEncumbrances = false
         };
 
-        var response = await _client.PutAsJsonAsync("/api/properties/1", updateData);
+        var response = await _client.PutAsJsonAsync($"/api/properties/{_testPropertyId}", updateData);
 
         response.EnsureSuccessStatusCode();
         var updated = await response.Content.ReadFromJsonAsync<RealEstatePropertyDto>(

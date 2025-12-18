@@ -1,26 +1,19 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using RealEstateAgency.Domain.Models;
-using RealEstateAgency.WebApi.DTOs;
-using RealEstateAgency.WebApi.Repositories;
+﻿using Microsoft.AspNetCore.Mvc;
+using RealEstateAgency.Contracts.Dto;
+using RealEstateAgency.Contracts.Interfaces;
 
 namespace RealEstateAgency.WebApi.Controllers;
 
 /// <summary>
 /// Контроллер для работы с объектами недвижимости
 /// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class PropertiesController : ControllerBase
+public class PropertiesController(
+    IRealEstatePropertyService service,
+    ILogger<PropertiesController> logger)
+    : BaseCrudController<RealEstatePropertyDto, CreateRealEstatePropertyDto, UpdateRealEstatePropertyDto, IRealEstatePropertyService>(service, logger)
 {
-    private readonly IRealEstatePropertyRepository _repository;
-    private readonly IMapper _mapper;
-
-    public PropertiesController(IRealEstatePropertyRepository repository, IMapper mapper)
-    {
-        _repository = repository;
-        _mapper = mapper;
-    }
+    /// <inheritdoc />
+    protected override Guid GetEntityId(RealEstatePropertyDto entity) => entity.Id;
 
     /// <summary>
     /// Получить все объекты недвижимости
@@ -28,10 +21,12 @@ public class PropertiesController : ControllerBase
     /// <returns>Список объектов недвижимости</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RealEstatePropertyDto>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<RealEstatePropertyDto>> GetAll()
+    public override async Task<ActionResult<IEnumerable<RealEstatePropertyDto>>> GetAll()
     {
-        var properties = _repository.GetAll();
-        return Ok(_mapper.Map<IEnumerable<RealEstatePropertyDto>>(properties));
+        Logger.LogInformation("Запрос на получение всех объектов недвижимости");
+        var properties = await Service.GetAllAsync();
+        Logger.LogInformation("Возвращено {Count} объектов недвижимости", properties.Count());
+        return Ok(properties);
     }
 
     /// <summary>
@@ -39,16 +34,20 @@ public class PropertiesController : ControllerBase
     /// </summary>
     /// <param name="id">Идентификатор объекта</param>
     /// <returns>Объект недвижимости</returns>
-    [HttpGet("{id:int}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(RealEstatePropertyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<RealEstatePropertyDto> GetById(int id)
+    public override async Task<ActionResult<RealEstatePropertyDto>> GetById(Guid id)
     {
-        var property = _repository.GetById(id);
+        Logger.LogInformation("Запрос на получение объекта недвижимости с ID {Id}", id);
+        var property = await Service.GetByIdAsync(id);
         if (property == null)
+        {
+            Logger.LogWarning("Объект недвижимости с ID {Id} не найден", id);
             return NotFound($"Объект недвижимости с ID {id} не найден");
+        }
 
-        return Ok(_mapper.Map<RealEstatePropertyDto>(property));
+        return Ok(property);
     }
 
     /// <summary>
@@ -59,13 +58,19 @@ public class PropertiesController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(RealEstatePropertyDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<RealEstatePropertyDto> Create([FromBody] CreateRealEstatePropertyDto dto)
+    public override async Task<ActionResult<RealEstatePropertyDto>> Create([FromBody] CreateRealEstatePropertyDto dto)
     {
-        var property = _mapper.Map<RealEstateProperty>(dto);
-        var created = _repository.Add(property);
-        var resultDto = _mapper.Map<RealEstatePropertyDto>(created);
+        if (!ModelState.IsValid)
+        {
+            Logger.LogWarning("Ошибка валидации при создании объекта недвижимости: {Errors}", ModelState);
+            return BadRequest(ModelState);
+        }
 
-        return CreatedAtAction(nameof(GetById), new { id = resultDto.Id }, resultDto);
+        Logger.LogInformation("Создание объекта недвижимости: {Address}", dto.Address);
+        var created = await Service.CreateAsync(dto);
+        Logger.LogInformation("Объект недвижимости создан с ID {Id}", created.Id);
+
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     /// <summary>
@@ -74,19 +79,29 @@ public class PropertiesController : ControllerBase
     /// <param name="id">Идентификатор объекта</param>
     /// <param name="dto">Новые данные объекта</param>
     /// <returns>Результат операции</returns>
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(RealEstatePropertyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<RealEstatePropertyDto> Update(int id, [FromBody] UpdateRealEstatePropertyDto dto)
+    public async Task<ActionResult<RealEstatePropertyDto>> Update(Guid id, [FromBody] UpdateRealEstatePropertyDto dto)
     {
-        var property = _mapper.Map<RealEstateProperty>(dto);
-        var updated = _repository.Update(id, property);
+        if (!ModelState.IsValid)
+        {
+            Logger.LogWarning("Ошибка валидации при обновлении объекта недвижимости {Id}: {Errors}", id, ModelState);
+            return BadRequest(ModelState);
+        }
+
+        Logger.LogInformation("Обновление объекта недвижимости с ID {Id}", id);
+        var updated = await Service.UpdateAsync(id, dto);
 
         if (updated == null)
+        {
+            Logger.LogWarning("Объект недвижимости с ID {Id} не найден для обновления", id);
             return NotFound($"Объект недвижимости с ID {id} не найден");
+        }
 
-        return Ok(_mapper.Map<RealEstatePropertyDto>(updated));
+        Logger.LogInformation("Объект недвижимости с ID {Id} успешно обновлен", id);
+        return Ok(updated);
     }
 
     /// <summary>
@@ -94,15 +109,20 @@ public class PropertiesController : ControllerBase
     /// </summary>
     /// <param name="id">Идентификатор объекта</param>
     /// <returns>Результат операции</returns>
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult Delete(int id)
+    public override async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = _repository.Delete(id);
+        Logger.LogInformation("Удаление объекта недвижимости с ID {Id}", id);
+        var deleted = await Service.DeleteAsync(id);
         if (!deleted)
+        {
+            Logger.LogWarning("Объект недвижимости с ID {Id} не найден для удаления", id);
             return NotFound($"Объект недвижимости с ID {id} не найден");
+        }
 
+        Logger.LogInformation("Объект недвижимости с ID {Id} успешно удален", id);
         return NoContent();
     }
 }

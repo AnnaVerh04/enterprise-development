@@ -11,7 +11,7 @@ public class Request
     /// <summary>
     /// The unique identifier of the application
     /// </summary>
-    public required int Id { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// The counterparty who submitted the application

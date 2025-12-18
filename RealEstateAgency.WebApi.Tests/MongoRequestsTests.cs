@@ -1,8 +1,7 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using RealEstateAgency.Contracts.Dto;
 using RealEstateAgency.Domain.Enums;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -62,7 +61,7 @@ public class MongoRequestsTests : IClassFixture<MongoDbWebApplicationFactory>
         var created = await createResponse.Content.ReadFromJsonAsync<RequestDto>(
             RealEstateWebApplicationFactory.JsonOptions);
         Assert.NotNull(created);
-        Assert.True(created.Id > 0);
+        Assert.NotEqual(Guid.Empty, created.Id);
         Assert.Equal(5000000.00m, created.Amount);
         Assert.Equal(RequestType.Sale, created.Type);
 
@@ -170,7 +169,7 @@ public class MongoRequestsTests : IClassFixture<MongoDbWebApplicationFactory>
 
         var request = new CreateRequestDto
         {
-            CounterpartyId = 99999,
+            CounterpartyId = Guid.NewGuid(),
             PropertyId = createdProperty!.Id,
             Type = RequestType.Sale,
             Amount = 1000000.00m,

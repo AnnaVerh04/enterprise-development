@@ -1,8 +1,7 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using RealEstateAgency.Contracts.Dto;
 using RealEstateAgency.Domain.Enums;
-using RealEstateAgency.WebApi.DTOs;
-using Xunit;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace RealEstateAgency.WebApi.Tests;
 
@@ -45,7 +44,7 @@ public class MongoPropertiesTests : IClassFixture<MongoDbWebApplicationFactory>
         var created = await createResponse.Content.ReadFromJsonAsync<RealEstatePropertyDto>(
             RealEstateWebApplicationFactory.JsonOptions);
         Assert.NotNull(created);
-        Assert.True(created.Id > 0);
+        Assert.NotEqual(Guid.Empty, created.Id);
         Assert.Equal("ул. MongoDB, д. 1, кв. 1", created.Address);
         Assert.Equal(PropertyType.Apartment, created.Type);
 

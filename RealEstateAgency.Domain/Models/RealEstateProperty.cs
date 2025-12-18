@@ -11,7 +11,7 @@ public class RealEstateProperty
     /// <summary>
     /// The unique identifier of the object
     /// </summary>
-    public required int Id { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Property type
