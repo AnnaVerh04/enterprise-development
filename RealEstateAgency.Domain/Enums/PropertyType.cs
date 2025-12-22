@@ -1,38 +1,38 @@
 ﻿namespace RealEstateAgency.Domain.Enums;
 
 /// <summary>
-/// Property type
-/// Classifies property by physical characteristics
+/// Тип недвижимости
+/// Классифицирует имущество по физическим характеристикам
 /// </summary>
 public enum PropertyType
 {
     /// <summary>
-    /// Apartment in an apartment building
+    /// Квартира в многоквартирном доме
     /// </summary>
     Apartment,
 
     /// <summary>
-    /// Detached apartment building
+    /// Отдельно стоящее многоквартирное здание
     /// </summary>
     House,
 
     /// <summary>
-    /// A blockaded apartment building with separate entrances
+    /// Блокированный многоквартирный дом с отдельными входами
     /// </summary>
     Townhouse,
 
     /// <summary>
-    /// Commercial premises for business
+    /// Коммерческие помещения для ведения бизнеса
     /// </summary>
     Commercial,
 
     /// <summary>
-    /// Warehouse or production premises
+    /// Складские или производственные помещения
     /// </summary>
     Warehouse,
 
     /// <summary>
-    /// A place for parking vehicles
+    /// Место для парковки транспортных средств
     /// </summary>
     ParkingSpace
 }

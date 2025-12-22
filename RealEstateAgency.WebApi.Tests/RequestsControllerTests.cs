@@ -8,17 +8,13 @@ namespace RealEstateAgency.WebApi.Tests;
 /// <summary>
 /// Тесты CRUD операций для заявок
 /// </summary>
-public class RequestsControllerTests : IClassFixture<RealEstateWebApplicationFactory>
+public class RequestsControllerTests(RealEstateWebApplicationFactory factory)
+    : IClassFixture<RealEstateWebApplicationFactory>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _client = factory.CreateClient();
     private static readonly Guid _testRequestId = Guid.Parse("20000000-0000-0000-0000-000000000001");
     private static readonly Guid _testCounterpartyId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private static readonly Guid _testPropertyId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-
-    public RequestsControllerTests(RealEstateWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
 
     /// <summary>
     /// GET /api/requests — получение всех заявок

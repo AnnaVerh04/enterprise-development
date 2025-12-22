@@ -9,14 +9,9 @@ namespace RealEstateAgency.WebApi.Tests;
 /// Интеграционные тесты CRUD операций для заявок с реальной MongoDB
 /// </summary>
 [Collection("MongoDB")]
-public class MongoRequestsTests : IClassFixture<MongoDbWebApplicationFactory>
+public class MongoRequestsTests(MongoDbWebApplicationFactory factory) : IClassFixture<MongoDbWebApplicationFactory>
 {
-    private readonly HttpClient _client;
-
-    public MongoRequestsTests(MongoDbWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     /// <summary>
     /// Полный CRUD цикл для заявки в MongoDB

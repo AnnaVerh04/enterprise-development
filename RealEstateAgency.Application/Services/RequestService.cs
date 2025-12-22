@@ -43,7 +43,9 @@ public class RequestService(
         var request = new Request
         {
             Id = Guid.Empty,
+            CounterpartyId = counterparty.Id,
             Counterparty = counterparty,
+            PropertyId = property.Id,
             Property = property,
             Type = dto.Type,
             Amount = dto.Amount,
@@ -72,7 +74,9 @@ public class RequestService(
         var request = new Request
         {
             Id = id,
+            CounterpartyId = counterparty.Id,
             Counterparty = counterparty,
+            PropertyId = property.Id,
             Property = property,
             Type = dto.Type,
             Amount = dto.Amount,

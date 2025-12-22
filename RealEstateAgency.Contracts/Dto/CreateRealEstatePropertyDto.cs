@@ -1,5 +1,5 @@
-﻿using RealEstateAgency.Domain.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using RealEstateAgency.Domain.Enums;
 
 namespace RealEstateAgency.Contracts.Dto;
 

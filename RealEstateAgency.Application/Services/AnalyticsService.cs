@@ -28,7 +28,7 @@ public class AnalyticsService(
                 .Where(r => r.Type == RequestType.Sale &&
                             r.Date >= startDate &&
                             r.Date <= endDate)
-                .Select(r => counterparties.TryGetValue(r.Counterparty.Id, out var c) ? c.FullName : r.Counterparty.FullName)
+                .Select(r => counterparties.TryGetValue(r.CounterpartyId, out var c) ? c.FullName : r.Counterparty?.FullName)
                 .Where(name => !string.IsNullOrEmpty(name))
                 .Distinct()
                 .Order()
@@ -45,10 +45,10 @@ public class AnalyticsService(
 
         var topPurchaseClients = requests
             .Where(r => r.Type == RequestType.Purchase)
-            .GroupBy(r => r.Counterparty.Id)
+            .GroupBy(r => r.CounterpartyId)
             .Select(g => new TopClientDto
             {
-                FullName = counterparties.TryGetValue(g.Key, out var c) ? c.FullName : g.First().Counterparty.FullName,
+                FullName = counterparties.TryGetValue(g.Key, out var c) ? c.FullName : g.First().Counterparty?.FullName ?? "",
                 RequestCount = g.Count()
             })
             .Where(x => !string.IsNullOrEmpty(x.FullName))
@@ -58,10 +58,10 @@ public class AnalyticsService(
 
         var topSaleClients = requests
             .Where(r => r.Type == RequestType.Sale)
-            .GroupBy(r => r.Counterparty.Id)
+            .GroupBy(r => r.CounterpartyId)
             .Select(g => new TopClientDto
             {
-                FullName = counterparties.TryGetValue(g.Key, out var c) ? c.FullName : g.First().Counterparty.FullName,
+                FullName = counterparties.TryGetValue(g.Key, out var c) ? c.FullName : g.First().Counterparty?.FullName ?? "",
                 RequestCount = g.Count()
             })
             .Where(x => !string.IsNullOrEmpty(x.FullName))
@@ -89,7 +89,7 @@ public class AnalyticsService(
             .. requests
                 .Select(r => new
                 {
-                    PropertyType = properties.TryGetValue(r.Property.Id, out var p) ? p.Type : r.Property.Type
+                    PropertyType = properties.TryGetValue(r.PropertyId, out var p) ? p.Type : r.Property?.Type ?? default
                 })
                 .GroupBy(x => x.PropertyType)
                 .Select(g => new PropertyTypeStatisticsDto
@@ -113,7 +113,7 @@ public class AnalyticsService(
 
         var clients = requests
             .Where(r => r.Amount == minAmount)
-            .Select(r => counterparties.TryGetValue(r.Counterparty.Id, out var c) ? c.FullName : r.Counterparty.FullName)
+            .Select(r => counterparties.TryGetValue(r.CounterpartyId, out var c) ? c.FullName : r.Counterparty?.FullName)
             .Where(name => !string.IsNullOrEmpty(name))
             .Distinct()
             .Order();
@@ -138,8 +138,8 @@ public class AnalyticsService(
         [
             .. requests
                 .Where(r => r.Type == RequestType.Purchase &&
-                            (properties.TryGetValue(r.Property.Id, out var p) ? p.Type : r.Property.Type) == propertyType)
-                .Select(r => counterparties.TryGetValue(r.Counterparty.Id, out var c) ? c.FullName : r.Counterparty.FullName)
+                            (properties.TryGetValue(r.PropertyId, out var p) ? p.Type : r.Property?.Type ?? default) == propertyType)
+                .Select(r => counterparties.TryGetValue(r.CounterpartyId, out var c) ? c.FullName : r.Counterparty?.FullName)
                 .Where(name => !string.IsNullOrEmpty(name))
                 .Distinct()
                 .Order()

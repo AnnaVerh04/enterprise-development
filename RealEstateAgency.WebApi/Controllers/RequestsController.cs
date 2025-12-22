@@ -17,12 +17,21 @@ public class RequestsController(IRequestService service, ILogger<RequestsControl
     /// <returns>Список заявок</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RequestDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<RequestDto>>> GetAll()
     {
-        logger.LogInformation("Запрос на получение всех заявок");
-        var requests = await service.GetAllAsync();
-        logger.LogInformation("Возвращено {Count} заявок", requests.Count());
-        return Ok(requests);
+        try
+        {
+            logger.LogInformation("Запрос на получение всех заявок");
+            var requests = await service.GetAllAsync();
+            logger.LogInformation("Возвращено {Count} заявок", requests.Count());
+            return Ok(requests);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при получении всех заявок");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 
     /// <summary>
@@ -33,17 +42,26 @@ public class RequestsController(IRequestService service, ILogger<RequestsControl
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(RequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<RequestDto>> GetById(Guid id)
     {
-        logger.LogInformation("Запрос на получение заявки с ID {Id}", id);
-        var request = await service.GetByIdAsync(id);
-        if (request == null)
+        try
         {
-            logger.LogWarning("Заявка с ID {Id} не найдена", id);
-            return NotFound($"Заявка с ID {id} не найдена");
-        }
+            logger.LogInformation("Запрос на получение заявки с ID {Id}", id);
+            var request = await service.GetByIdAsync(id);
+            if (request == null)
+            {
+                logger.LogWarning("Заявка с ID {Id} не найдена", id);
+                return NotFound($"Заявка с ID {id} не найдена");
+            }
 
-        return Ok(request);
+            return Ok(request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при получении заявки с ID {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 
     /// <summary>
@@ -55,25 +73,34 @@ public class RequestsController(IRequestService service, ILogger<RequestsControl
     [ProducesResponseType(typeof(RequestDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<RequestDto>> Create([FromBody] CreateRequestDto dto)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            logger.LogWarning("Ошибка валидации при создании заявки: {Errors}", ModelState);
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                logger.LogWarning("Ошибка валидации при создании заявки: {Errors}", ModelState);
+                return BadRequest(ModelState);
+            }
+
+            logger.LogInformation("Создание заявки для контрагента {CounterpartyId}", dto.CounterpartyId);
+            var (result, error) = await service.CreateAsync(dto);
+
+            if (result == null)
+            {
+                logger.LogWarning("Ошибка при создании заявки: {Error}", error);
+                return NotFound(error);
+            }
+
+            logger.LogInformation("Заявка создана с ID {Id}", result.Id);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
-
-        logger.LogInformation("Создание заявки для контрагента {CounterpartyId}", dto.CounterpartyId);
-        var (result, error) = await service.CreateAsync(dto);
-
-        if (result == null)
+        catch (Exception ex)
         {
-            logger.LogWarning("Ошибка при создании заявки: {Error}", error);
-            return NotFound(error);
+            logger.LogError(ex, "Ошибка при создании заявки");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
         }
-
-        logger.LogInformation("Заявка создана с ID {Id}", result.Id);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     /// <summary>
@@ -86,25 +113,34 @@ public class RequestsController(IRequestService service, ILogger<RequestsControl
     [ProducesResponseType(typeof(RequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<RequestDto>> Update(Guid id, [FromBody] UpdateRequestDto dto)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            logger.LogWarning("Ошибка валидации при обновлении заявки {Id}: {Errors}", id, ModelState);
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                logger.LogWarning("Ошибка валидации при обновлении заявки {Id}: {Errors}", id, ModelState);
+                return BadRequest(ModelState);
+            }
+
+            logger.LogInformation("Обновление заявки с ID {Id}", id);
+            var (result, error) = await service.UpdateAsync(id, dto);
+
+            if (result == null)
+            {
+                logger.LogWarning("Ошибка при обновлении заявки {Id}: {Error}", id, error);
+                return NotFound(error);
+            }
+
+            logger.LogInformation("Заявка с ID {Id} успешно обновлена", id);
+            return Ok(result);
         }
-
-        logger.LogInformation("Обновление заявки с ID {Id}", id);
-        var (result, error) = await service.UpdateAsync(id, dto);
-
-        if (result == null)
+        catch (Exception ex)
         {
-            logger.LogWarning("Ошибка при обновлении заявки {Id}: {Error}", id, error);
-            return NotFound(error);
+            logger.LogError(ex, "Ошибка при обновлении заявки с ID {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
         }
-
-        logger.LogInformation("Заявка с ID {Id} успешно обновлена", id);
-        return Ok(result);
     }
 
     /// <summary>
@@ -115,17 +151,26 @@ public class RequestsController(IRequestService service, ILogger<RequestsControl
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        logger.LogInformation("Удаление заявки с ID {Id}", id);
-        var deleted = await service.DeleteAsync(id);
-        if (!deleted)
+        try
         {
-            logger.LogWarning("Заявка с ID {Id} не найдена для удаления", id);
-            return NotFound($"Заявка с ID {id} не найдена");
-        }
+            logger.LogInformation("Удаление заявки с ID {Id}", id);
+            var deleted = await service.DeleteAsync(id);
+            if (!deleted)
+            {
+                logger.LogWarning("Заявка с ID {Id} не найдена для удаления", id);
+                return NotFound($"Заявка с ID {id} не найдена");
+            }
 
-        logger.LogInformation("Заявка с ID {Id} успешно удалена", id);
-        return NoContent();
+            logger.LogInformation("Заявка с ID {Id} успешно удалена", id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при удалении заявки с ID {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 }

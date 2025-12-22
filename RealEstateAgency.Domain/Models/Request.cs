@@ -3,38 +3,48 @@
 namespace RealEstateAgency.Domain.Models;
 
 /// <summary>
-/// Application for a real estate transaction
-/// It is an agreement between the counterparty and the agency.
+/// Заявка на совершение сделки с недвижимостью
+/// Это соглашение между контрагентом и агентством.
 /// </summary>
 public class Request
 {
     /// <summary>
-    /// The unique identifier of the application
+    /// Уникальный идентификатор приложения
     /// </summary>
     public Guid Id { get; set; }
 
     /// <summary>
-    /// The counterparty who submitted the application
+    /// Идентификатор контрагента (внешний ключ)
     /// </summary>
-    public required Counterparty Counterparty { get; set; }
+    public Guid CounterpartyId { get; set; }
 
     /// <summary>
-    /// The real estate object associated with the application
+    /// Контрагент, подавший заявку
     /// </summary>
-    public required RealEstateProperty Property { get; set; }
+    public required Counterparty Counterparty { get; set; } = null!;
 
     /// <summary>
-    /// Type of operation: purchase or sale
+    /// Идентификатор объекта недвижимости (внешний ключ)
+    /// </summary>
+    public Guid PropertyId { get; set; }
+
+    /// <summary>
+    /// Объект недвижимости, связанный с приложением
+    /// </summary>
+    public required RealEstateProperty Property { get; set; } = null!;
+
+    /// <summary>
+    /// Тип операции: покупка или продажа
     /// </summary>
     public required RequestType Type { get; set; }
 
     /// <summary>
-    /// The amount of money for the application in rubles
+    /// Денежная сумма для подачи заявки в рублях
     /// </summary>
     public required decimal Amount { get; set; }
 
     /// <summary>
-    /// Application submission date
+    /// Дата подачи заявки
     /// </summary>
     public required DateTime Date { get; set; }
 }

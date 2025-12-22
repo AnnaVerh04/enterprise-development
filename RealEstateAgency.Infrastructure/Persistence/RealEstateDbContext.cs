@@ -7,7 +7,7 @@ namespace RealEstateAgency.Infrastructure.Persistence;
 /// <summary>
 /// Контекст базы данных для работы с MongoDB через EF Core
 /// </summary>
-public class RealEstateDbContext : DbContext
+public class RealEstateDbContext(DbContextOptions<RealEstateDbContext> options) : DbContext(options)
 {
     /// <summary>
     /// Коллекция контрагентов
@@ -23,13 +23,6 @@ public class RealEstateDbContext : DbContext
     /// Коллекция заявок
     /// </summary>
     public DbSet<Request> Requests { get; set; } = null!;
-
-    /// <summary>
-    /// Конструктор контекста
-    /// </summary>
-    public RealEstateDbContext(DbContextOptions<RealEstateDbContext> options) : base(options)
-    {
-    }
 
     /// <summary>
     /// Конфигурация моделей для MongoDB
@@ -54,6 +47,9 @@ public class RealEstateDbContext : DbContext
         {
             entity.ToCollection("requests");
             entity.HasKey(r => r.Id);
+
+            entity.Ignore(r => r.Counterparty);
+            entity.Ignore(r => r.Property);
         });
     }
 }

@@ -11,10 +11,10 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var useMongoDB = builder.Configuration.GetConnectionString("realestatedb") != null
+var useMongoDb = builder.Configuration.GetConnectionString("realestatedb") != null
     || Environment.GetEnvironmentVariable("ConnectionStrings__realestatedb") != null;
 
-if (useMongoDB)
+if (useMongoDb)
 {
     builder.AddServiceDefaults();
 
@@ -71,7 +71,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
 
-if (useMongoDB)
+if (useMongoDb)
 {
     app.MapDefaultEndpoints();
 

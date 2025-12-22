@@ -1,23 +1,23 @@
 ﻿namespace RealEstateAgency.Domain.Enums;
 
 /// <summary>
-/// Purpose of the property
-/// Defines the main purpose of using the property
+/// Назначение объекта недвижимости
+/// Определяет основную цель использования объекта недвижимости
 /// </summary>
 public enum PropertyPurpose
 {
     /// <summary>
-    /// Residential purpose - for human habitation
+    /// Жилое назначение - для проживания людей
     /// </summary>
     Residential,
 
     /// <summary>
-    /// Commercial purpose - for business activities
+    /// Коммерческое назначение - для осуществления предпринимательской деятельности
     /// </summary>
     Commercial,
 
     /// <summary>
-    /// Industrial use - for production activities
+    /// Промышленное использование - для производственной деятельности
     /// </summary>
     Industrial
 }

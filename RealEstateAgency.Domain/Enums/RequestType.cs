@@ -1,18 +1,18 @@
 ﻿namespace RealEstateAgency.Domain.Enums;
 
 /// <summary>
-/// The type of application in the real estate agency
-/// Determines the direction of the real estate transaction
+/// Тип заявления в агентство недвижимости
+/// Определяет направление сделки с недвижимостью
 /// </summary>
 public enum RequestType
 {
     /// <summary>
-    /// Application for the purchase of real estate
+    /// Заявка на покупку недвижимости
     /// </summary>
     Purchase,
 
     /// <summary>
-    /// Application for real estate sale
+    /// Заявка на продажу недвижимости
     /// </summary>
     Sale
 }

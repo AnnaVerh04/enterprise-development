@@ -25,7 +25,6 @@ public class MongoDbWebApplicationFactory : WebApplicationFactory<Program>, IAsy
     {
         builder.ConfigureServices(services =>
         {
-            // Удаляем существующие регистрации
             var descriptorsToRemove = services
                 .Where(d => d.ServiceType == typeof(ICounterpartyRepository) ||
                             d.ServiceType == typeof(IRealEstatePropertyRepository) ||
@@ -41,17 +40,14 @@ public class MongoDbWebApplicationFactory : WebApplicationFactory<Program>, IAsy
                 services.Remove(descriptor);
             }
 
-            // Регистрируем MongoDB клиент
             var mongoClient = new MongoClient(ConnectionString);
             services.AddSingleton<IMongoClient>(mongoClient);
 
-            // Регистрируем DbContext с MongoDB провайдером
             services.AddDbContext<RealEstateDbContext>(options =>
             {
                 options.UseMongoDB(mongoClient, "realestatedb_test");
             });
 
-            // Регистрируем репозитории
             services.AddScoped<ICounterpartyRepository, MongoCounterpartyRepository>();
             services.AddScoped<IRealEstatePropertyRepository, MongoRealEstatePropertyRepository>();
             services.AddScoped<IRequestRepository, MongoRequestRepository>();

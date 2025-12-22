@@ -8,15 +8,11 @@ namespace RealEstateAgency.WebApi.Tests;
 /// <summary>
 /// Тесты CRUD операций для объектов недвижимости
 /// </summary>
-public class PropertiesControllerTests : IClassFixture<RealEstateWebApplicationFactory>
+public class PropertiesControllerTests(RealEstateWebApplicationFactory factory)
+    : IClassFixture<RealEstateWebApplicationFactory>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _client = factory.CreateClient();
     private static readonly Guid _testPropertyId = Guid.Parse("10000000-0000-0000-0000-000000000001");
-
-    public PropertiesControllerTests(RealEstateWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
 
     /// <summary>
     /// GET /api/properties — получение всех объектов

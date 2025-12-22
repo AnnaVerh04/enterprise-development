@@ -7,14 +7,10 @@ namespace RealEstateAgency.WebApi.Tests;
 /// <summary>
 /// Тесты аналитических запросов
 /// </summary>
-public class AnalyticsControllerTests : IClassFixture<RealEstateWebApplicationFactory>
+public class AnalyticsControllerTests(RealEstateWebApplicationFactory factory)
+    : IClassFixture<RealEstateWebApplicationFactory>
 {
-    private readonly HttpClient _client;
-
-    public AnalyticsControllerTests(RealEstateWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     /// <summary>
     /// Тест: Вывести всех продавцов за указанный период

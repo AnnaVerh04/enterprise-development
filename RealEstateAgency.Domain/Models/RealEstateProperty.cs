@@ -3,63 +3,63 @@
 namespace RealEstateAgency.Domain.Models;
 
 /// <summary>
-/// The real estate object
-/// Describes the physical characteristics of the property
+/// Объект недвижимости
+/// Описывает физические характеристики объекта недвижимости
 /// </summary>
 public class RealEstateProperty
 {
     /// <summary>
-    /// The unique identifier of the object
+    /// Уникальный идентификатор объекта
     /// </summary>
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Property type
+    /// Тип недвижимости
     /// </summary>
     public required PropertyType Type { get; set; }
 
     /// <summary>
-    /// Purpose of the property
+    /// Назначение объекта недвижимости
     /// </summary>
     public required PropertyPurpose Purpose { get; set; }
 
     /// <summary>
-    /// A unique identifier in the state registry
+    /// Уникальный идентификатор в государственном реестре
     /// </summary>
     public required string CadastralNumber { get; set; }
 
     /// <summary>
-    /// The physical address of the object location
+    /// Физический адрес местоположения объекта
     /// </summary>
     public required string Address { get; set; }
 
     /// <summary>
-    /// Total number of floors of the building
+    /// Общее количество этажей в здании
     /// </summary>
     public int? TotalFloors { get; set; }
 
     /// <summary>
-    /// The total area of the facility in square meters
+    /// Общая площадь объекта в квадратных метрах
     /// </summary>
     public required double TotalArea { get; set; }
 
     /// <summary>
-    /// Number of rooms in the facility
+    /// Количество комнат в комплексе
     /// </summary>
     public int? RoomsCount { get; set; }
 
     /// <summary>
-    /// Ceiling height in meters
+    /// Высота потолков в метрах
     /// </summary>
     public double? CeilingHeight { get; set; }
 
     /// <summary>
-    /// The floor of the object location
+    /// Этаж расположения объекта
     /// </summary>
     public int? Floor { get; set; }
 
     /// <summary>
-    /// The presence of legal encumbrances (collateral, arrest, mortgage)
+    /// Наличие юридических обременений (залог, арест, ипотека)
     /// </summary>
     public bool? HasEncumbrances { get; set; }
 }

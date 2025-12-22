@@ -7,15 +7,11 @@ namespace RealEstateAgency.WebApi.Tests;
 /// <summary>
 /// Тесты CRUD операций для контрагентов
 /// </summary>
-public class CounterpartiesControllerTests : IClassFixture<RealEstateWebApplicationFactory>
+public class CounterpartiesControllerTests(RealEstateWebApplicationFactory factory)
+    : IClassFixture<RealEstateWebApplicationFactory>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _client = factory.CreateClient();
     private static readonly Guid _testCounterpartyId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
-    public CounterpartiesControllerTests(RealEstateWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
 
     /// <summary>
     /// GET /api/counterparties — получение всех контрагентов

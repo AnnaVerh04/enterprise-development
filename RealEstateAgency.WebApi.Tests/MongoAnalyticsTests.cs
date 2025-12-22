@@ -8,14 +8,9 @@ namespace RealEstateAgency.WebApi.Tests;
 /// Интеграционные тесты аналитических запросов с реальной MongoDB
 /// </summary>
 [Collection("MongoDB")]
-public class MongoAnalyticsTests : IClassFixture<MongoDbWebApplicationFactory>
+public class MongoAnalyticsTests(MongoDbWebApplicationFactory factory) : IClassFixture<MongoDbWebApplicationFactory>
 {
-    private readonly HttpClient _client;
-
-    public MongoAnalyticsTests(MongoDbWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     /// <summary>
     /// Тест аналитики продавцов за период с MongoDB

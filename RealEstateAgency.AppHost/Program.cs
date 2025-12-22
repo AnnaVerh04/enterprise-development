@@ -9,6 +9,7 @@ var mongoDatabase = mongodb.AddDatabase("realestatedb");
 // WebApi
 builder.AddProject<Projects.RealEstateAgency_WebApi>("webapi")
     .WithReference(mongoDatabase)
+    .WaitFor(mongoDatabase)
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();

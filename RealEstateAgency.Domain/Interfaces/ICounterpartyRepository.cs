@@ -5,6 +5,5 @@ namespace RealEstateAgency.Domain.Interfaces;
 /// <summary>
 /// Интерфейс репозитория контрагентов
 /// </summary>
-public interface ICounterpartyRepository : IRepository<Counterparty>
-{
-}
+public interface ICounterpartyRepository : IRepository<Counterparty>;
+

@@ -21,12 +21,21 @@ public class CounterpartiesController(
     /// <returns>Список контрагентов</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<CounterpartyDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public override async Task<ActionResult<IEnumerable<CounterpartyDto>>> GetAll()
     {
-        Logger.LogInformation("Запрос на получение всех контрагентов");
-        var counterparties = await Service.GetAllAsync();
-        Logger.LogInformation("Возвращено {Count} контрагентов", counterparties.Count());
-        return Ok(counterparties);
+        try
+        {
+            Logger.LogInformation("Запрос на получение всех контрагентов");
+            var counterparties = await Service.GetAllAsync();
+            Logger.LogInformation("Возвращено {Count} контрагентов", counterparties.Count());
+            return Ok(counterparties);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при получении всех контрагентов");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 
     /// <summary>
@@ -37,17 +46,26 @@ public class CounterpartiesController(
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(CounterpartyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public override async Task<ActionResult<CounterpartyDto>> GetById(Guid id)
     {
-        Logger.LogInformation("Запрос на получение контрагента с ID {Id}", id);
-        var counterparty = await Service.GetByIdAsync(id);
-        if (counterparty == null)
+        try
         {
-            Logger.LogWarning("Контрагент с ID {Id} не найден", id);
-            return NotFound($"Контрагент с ID {id} не найден");
-        }
+            Logger.LogInformation("Запрос на получение контрагента с ID {Id}", id);
+            var counterparty = await Service.GetByIdAsync(id);
+            if (counterparty == null)
+            {
+                Logger.LogWarning("Контрагент с ID {Id} не найден", id);
+                return NotFound($"Контрагент с ID {id} не найден");
+            }
 
-        return Ok(counterparty);
+            return Ok(counterparty);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при получении контрагента с ID {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 
     /// <summary>
@@ -58,19 +76,28 @@ public class CounterpartiesController(
     [HttpPost]
     [ProducesResponseType(typeof(CounterpartyDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public override async Task<ActionResult<CounterpartyDto>> Create([FromBody] CreateCounterpartyDto dto)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            Logger.LogWarning("Ошибка валидации при создании контрагента: {Errors}", ModelState);
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                Logger.LogWarning("Ошибка валидации при создании контрагента: {Errors}", ModelState);
+                return BadRequest(ModelState);
+            }
+
+            Logger.LogInformation("Создание контрагента: {FullName}", dto.FullName);
+            var created = await Service.CreateAsync(dto);
+            Logger.LogInformation("Контрагент создан с ID {Id}", created.Id);
+
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
-
-        Logger.LogInformation("Создание контрагента: {FullName}", dto.FullName);
-        var created = await Service.CreateAsync(dto);
-        Logger.LogInformation("Контрагент создан с ID {Id}", created.Id);
-
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при создании контрагента");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 
     /// <summary>
@@ -83,25 +110,34 @@ public class CounterpartiesController(
     [ProducesResponseType(typeof(CounterpartyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CounterpartyDto>> Update(Guid id, [FromBody] UpdateCounterpartyDto dto)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            Logger.LogWarning("Ошибка валидации при обновлении контрагента {Id}: {Errors}", id, ModelState);
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                Logger.LogWarning("Ошибка валидации при обновлении контрагента {Id}: {Errors}", id, ModelState);
+                return BadRequest(ModelState);
+            }
+
+            Logger.LogInformation("Обновление контрагента с ID {Id}", id);
+            var updated = await Service.UpdateAsync(id, dto);
+
+            if (updated == null)
+            {
+                Logger.LogWarning("Контрагент с ID {Id} не найден для обновления", id);
+                return NotFound($"Контрагент с ID {id} не найден");
+            }
+
+            Logger.LogInformation("Контрагент с ID {Id} успешно обновлен", id);
+            return Ok(updated);
         }
-
-        Logger.LogInformation("Обновление контрагента с ID {Id}", id);
-        var updated = await Service.UpdateAsync(id, dto);
-
-        if (updated == null)
+        catch (Exception ex)
         {
-            Logger.LogWarning("Контрагент с ID {Id} не найден для обновления", id);
-            return NotFound($"Контрагент с ID {id} не найден");
+            Logger.LogError(ex, "Ошибка при обновлении контрагента с ID {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
         }
-
-        Logger.LogInformation("Контрагент с ID {Id} успешно обновлен", id);
-        return Ok(updated);
     }
 
     /// <summary>
@@ -112,17 +148,26 @@ public class CounterpartiesController(
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public override async Task<IActionResult> Delete(Guid id)
     {
-        Logger.LogInformation("Удаление контрагента с ID {Id}", id);
-        var deleted = await Service.DeleteAsync(id);
-        if (!deleted)
+        try
         {
-            Logger.LogWarning("Контрагент с ID {Id} не найден для удаления", id);
-            return NotFound($"Контрагент с ID {id} не найден");
-        }
+            Logger.LogInformation("Удаление контрагента с ID {Id}", id);
+            var deleted = await Service.DeleteAsync(id);
+            if (!deleted)
+            {
+                Logger.LogWarning("Контрагент с ID {Id} не найден для удаления", id);
+                return NotFound($"Контрагент с ID {id} не найден");
+            }
 
-        Logger.LogInformation("Контрагент с ID {Id} успешно удален", id);
-        return NoContent();
+            Logger.LogInformation("Контрагент с ID {Id} успешно удален", id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Ошибка при удалении контрагента с ID {Id}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, "Внутренняя ошибка сервера");
+        }
     }
 }

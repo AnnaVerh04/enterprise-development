@@ -1,28 +1,28 @@
 ﻿namespace RealEstateAgency.Domain.Models;
 
 /// <summary>
-/// The counterparty of the real estate agency
-/// An individual involved in real estate transactions
+/// Контрагент агентства недвижимости
+/// Физическое лицо, участвующее в сделках с недвижимостью
 /// </summary>
 public class Counterparty
 {
     /// <summary>
-    /// The unique identifier of the counterparty
+    /// Уникальный идентификатор контрагента
     /// </summary>
     public Guid Id { get; set; }
 
     /// <summary>
-    /// The counterparty's full name in the "Last Name, First Name, Patronymic" format
+    /// Полное наименование контрагента в формате "Фамилия, имя, отчество"
     /// </summary>
     public required string FullName { get; set; }
 
     /// <summary>
-    /// Passport number for identification
+    /// Номер паспорта для идентификации личности
     /// </summary>
     public required string PassportNumber { get; set; }
 
     /// <summary>
-    /// Contact phone number for communication
+    /// Контактный телефон для связи
     /// </summary>
     public required string PhoneNumber { get; set; }
 }

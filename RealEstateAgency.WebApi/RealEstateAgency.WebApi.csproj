@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,16 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.MongoDB.Driver" Version="13.0.2" />
+    <PackageReference Include="Aspire.MongoDB.Driver" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.12" />
-    <PackageReference Include="MongoDB.Driver" Version="3.5.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\RealEstateAgency.Application\RealEstateAgency.Application.csproj" />
-    <ProjectReference Include="..\RealEstateAgency.Contracts\RealEstateAgency.Contracts.csproj" />
-    <ProjectReference Include="..\RealEstateAgency.Domain\RealEstateAgency.Domain.csproj" />
     <ProjectReference Include="..\RealEstateAgency.Infrastructure\RealEstateAgency.Infrastructure.csproj" />
     <ProjectReference Include="..\RealEstateAgency.ServiceDefaults\RealEstateAgency.ServiceDefaults.csproj" />
   </ItemGroup>

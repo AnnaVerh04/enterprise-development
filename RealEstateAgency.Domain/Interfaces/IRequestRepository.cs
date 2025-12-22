@@ -5,6 +5,4 @@ namespace RealEstateAgency.Domain.Interfaces;
 /// <summary>
 /// Интерфейс репозитория заявок
 /// </summary>
-public interface IRequestRepository : IRepository<Request>
-{
-}
+public interface IRequestRepository : IRepository<Request>;
