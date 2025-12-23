@@ -11,14 +11,14 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var useMongoDb = builder.Configuration.GetConnectionString("realestatedb") != null
-    || Environment.GetEnvironmentVariable("ConnectionStrings__realestatedb") != null;
+var useMongoDb = builder.Configuration.GetConnectionString("MongoDB") != null
+    || Environment.GetEnvironmentVariable("ConnectionStrings__MongoDB") != null;
 
 if (useMongoDb)
 {
     builder.AddServiceDefaults();
 
-    builder.AddMongoDBClient("realestatedb");
+    builder.AddMongoDBClient("MongoDB");
 
     builder.Services.AddDbContext<RealEstateDbContext>((serviceProvider, options) =>
     {

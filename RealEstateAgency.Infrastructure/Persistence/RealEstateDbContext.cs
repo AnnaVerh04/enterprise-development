@@ -7,8 +7,14 @@ namespace RealEstateAgency.Infrastructure.Persistence;
 /// <summary>
 /// Контекст базы данных для работы с MongoDB через EF Core
 /// </summary>
-public class RealEstateDbContext(DbContextOptions<RealEstateDbContext> options) : DbContext(options)
+public class RealEstateDbContext : DbContext
 {
+    public RealEstateDbContext(DbContextOptions<RealEstateDbContext> options)
+        : base(options)
+    {
+        Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
+    }
+
     /// <summary>
     /// Коллекция контрагентов
     /// </summary>
