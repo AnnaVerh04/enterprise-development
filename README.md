@@ -31,12 +31,14 @@
 
 ### Структура решения
 * RealEstateAgency.AppHost/ - .NET Aspire оркестратор
-* RealEstateAgency.WebApi/ - ASP.NET Core API контроллеры
+* RealEstateAgency.WebApi/ - ASP.NET Core API с NATS Subscriber Service
+* RealEstateAgency.Generator/ - Сервис генерации тестовых данных с отправкой через NATS
 * RealEstateAgency.Application/ - Бизнес-логика и сервисы
 * RealEstateAgency.Contracts/ - DTO и интерфейсы сервисов
 * RealEstateAgency.Domain/ - Сущности и интерфейсы репозиториев
 * RealEstateAgency.Infrastructure/ - Репозитории и контекст БД (MongoDB)
 * RealEstateAgency.ServiceDefaults/ - Общие настройки Aspire
+* RealEstateAgency.Generator.Tests/ - Тесты генератора данных
 * RealEstateAgency.WebApi.Tests/ - Интеграционные тесты
 
 ### Функциональные возможности
@@ -44,6 +46,7 @@
 #### CRUD операции
 - Полное управление контрагентами, объектами недвижимости и заявками
 - Валидация связанных сущностей при создании/обновлении заявок
+- Асинхронное получение данных через NATS
 
 #### Аналитические запросы
 * Продавцы за указанный период
@@ -56,6 +59,25 @@
 * Двойные репозитории: InMemory для тестов, MongoDB для продакшена
 * Автоматическое заполнение БД: 12 контрагентов, 13 объектов, 15 заявок при первом запуске
 * Умная конфигурация: Автоматическое переключение между MongoDB и InMemory режимами
+* Асинхронная обработка: NATS Subscriber Service для фонового получения сообщений
+* Docker-оркестрация: Полная контейнеризация через .NET Aspire AppHost
+
+### Распределенные возможности 
+* Потоковая передача данных: Generator → NATS → WebAPI → MongoDB
+* Мониторинг: Визуализация работы системы через Aspire Dashboard
+* Масштабируемость: Независимое развертывание компонентов
+
+### Асинхронная коммуникация через NATS
+- Generator публикует сообщения в топики:
+* realestate.counterparty.created - создание контрагента
+* realestate.property.created - создание объекта недвижимости
+- WebAPI подписывается на сообщения и сохраняет данные в MongoDB
+- Пакетная отправка: Generator отправляет данные пачками по 10 записей каждые 5 секунд
+
+### Мониторинг через .NET Aspire
+* Aspire Dashboard: Визуальный мониторинг состояния всех сервисов
+* Логирование операций: Детальное логирование всех операций с MongoDB
+* Health checks: Проверка здоровья всех компонентов системы
 
 
 

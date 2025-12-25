@@ -7,18 +7,20 @@ using RealEstateAgency.Domain.Interfaces;
 using RealEstateAgency.Infrastructure.Persistence;
 using RealEstateAgency.Infrastructure.Repositories;
 using RealEstateAgency.ServiceDefaults;
+using RealEstateAgency.WebApi.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var useMongoDb = builder.Configuration.GetConnectionString("MongoDB") != null
-    || Environment.GetEnvironmentVariable("ConnectionStrings__MongoDB") != null;
+var useMongoDb = !builder.Environment.IsEnvironment("Testing")
+    && (builder.Configuration.GetConnectionString("realestatedb") != null
+        || Environment.GetEnvironmentVariable("ConnectionStrings__realestatedb") != null);
 
 if (useMongoDb)
 {
     builder.AddServiceDefaults();
 
-    builder.AddMongoDBClient("MongoDB");
+    builder.AddMongoDBClient("realestatedb");
 
     builder.Services.AddDbContext<RealEstateDbContext>((serviceProvider, options) =>
     {
@@ -43,6 +45,20 @@ builder.Services.AddScoped<IRealEstatePropertyService, RealEstatePropertyService
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
+var natsConnectionString = builder.Environment.IsEnvironment("Testing")
+    ? null
+    : (builder.Configuration.GetConnectionString("nats")
+        ?? Environment.GetEnvironmentVariable("ConnectionStrings__nats"));
+
+if (!string.IsNullOrEmpty(natsConnectionString))
+{
+    builder.Services.AddHostedService(sp =>
+        new NatsSubscriberService(
+            sp,
+            sp.GetRequiredService<ILogger<NatsSubscriberService>>(),
+            natsConnectionString));
+}
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -56,7 +72,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Real Estate Agency API",
         Version = "v1",
-        Description = "API риэлторского агентства для работы с объектами недвижимости, контрагентами и заявками"
+        Description = "API риелторского агентства для работы с объектами недвижимости, контрагентами и заявками"
     });
 
     var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -77,7 +93,22 @@ if (useMongoDb)
 
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-    await seeder.SeedAsync();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    const int maxRetries = 5;
+    for (var i = 0; i < maxRetries; i++)
+    {
+        try
+        {
+            await seeder.SeedAsync();
+            break;
+        }
+        catch (Exception ex) when (i < maxRetries - 1)
+        {
+            logger.LogWarning(ex, "Попытка {Attempt}/{MaxRetries} seed не удалась, повтор через 3 секунды...", i + 1, maxRetries);
+            await Task.Delay(3000);
+        }
+    }
 }
 
 if (app.Environment.IsDevelopment())
