@@ -1,43 +1,31 @@
+using Microsoft.Extensions.Options;
 using RealEstateAgency.Generator.Services;
+using RealEstateAgency.ServiceDefaults; 
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.SetMinimumLevel(LogLevel.Information);
+builder.AddServiceDefaults();
 
-var natsConnectionString = builder.Configuration["ConnectionStrings:nats"]
-    ?? Environment.GetEnvironmentVariable("ConnectionStrings__nats")
-    ?? "nats://localhost:4222";
+var natsConnectionString = "nats://localhost:4222";
 
-var batchSize = int.TryParse(
-    builder.Configuration["Generator:BatchSize"] ??
-    Environment.GetEnvironmentVariable("GENERATOR_BATCH_SIZE"),
-    out var bs) ? bs : 10;
-
-var delayMs = int.TryParse(
-    builder.Configuration["Generator:DelayMs"] ??
-    Environment.GetEnvironmentVariable("GENERATOR_DELAY_MS"),
-    out var dm) ? dm : 5000;
+builder.Services.Configure<DataGeneratorSettings>(
+    builder.Configuration.GetSection(DataGeneratorSettings.SectionName));
 
 builder.Services.AddSingleton(sp =>
     new NatsPublisher(
         natsConnectionString,
         sp.GetRequiredService<ILogger<NatsPublisher>>()));
 
-builder.Services.AddHostedService(sp =>
-    new DataGeneratorService(
-        sp.GetRequiredService<NatsPublisher>(),
-        sp.GetRequiredService<ILogger<DataGeneratorService>>(),
-        batchSize,
-        delayMs));
+builder.Services.AddHostedService<DataGeneratorService>();
 
 var host = builder.Build();
 
+var settings = host.Services.GetRequiredService<IOptions<DataGeneratorSettings>>().Value;
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
 logger.LogInformation("=== RealEstateAgency Data Generator ===");
 logger.LogInformation("NATS Connection: {Connection}", natsConnectionString);
-logger.LogInformation("Batch Size: {BatchSize}", batchSize);
-logger.LogInformation("Delay between batches: {Delay}ms", delayMs);
+logger.LogInformation("Batch Size: {BatchSize}", settings.BatchSize);
+logger.LogInformation("Delay between batches: {Delay}ms", settings.DelayBetweenBatchesMs);
 
 await host.RunAsync();

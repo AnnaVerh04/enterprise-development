@@ -16,5 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RealEstateAgency.Contracts\RealEstateAgency.Contracts.csproj" />
+    <ProjectReference Include="..\RealEstateAgency.ServiceDefaults\RealEstateAgency.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

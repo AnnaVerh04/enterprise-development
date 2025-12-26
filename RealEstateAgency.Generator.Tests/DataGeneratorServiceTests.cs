@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NATS.Client.Core;
 using RealEstateAgency.Contracts.Dto;
@@ -24,6 +25,7 @@ public class DataGeneratorServiceTests : IAsyncLifetime
     private NatsPublisher? _publisher;
     private readonly Mock<ILogger<NatsPublisher>> _publisherLoggerMock;
     private readonly Mock<ILogger<DataGeneratorService>> _serviceLoggerMock;
+    private readonly DataGeneratorSettings _testSettings;
 
     public DataGeneratorServiceTests()
     {
@@ -33,6 +35,16 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         _publisherLoggerMock = new Mock<ILogger<NatsPublisher>>();
         _serviceLoggerMock = new Mock<ILogger<DataGeneratorService>>();
+
+        _testSettings = new DataGeneratorSettings
+        {
+            BatchSize = 10,
+            DelayBetweenBatchesMs = 5000,
+            DelayBetweenMessagesMs = 100,
+            CounterpartyTopic = "realestate.counterparty.created",
+            PropertyTopic = "realestate.property.created",
+            RequestTopic = "realestate.request.created"
+        };
     }
 
     public async Task InitializeAsync()
@@ -62,7 +74,7 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         var subscription = Task.Run(async () =>
         {
-            await foreach (var msg in subscriber.SubscribeAsync<string>(DataGeneratorService.CounterpartyTopic))
+            await foreach (var msg in subscriber.SubscribeAsync<string>(_testSettings.CounterpartyTopic))
             {
                 if (!string.IsNullOrEmpty(msg.Data))
                 {
@@ -81,11 +93,20 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         await Task.Delay(100);
 
+        var serviceOptions = Options.Create(new DataGeneratorSettings
+        {
+            BatchSize = 3,
+            DelayBetweenBatchesMs = 100,
+            DelayBetweenMessagesMs = 100,
+            CounterpartyTopic = _testSettings.CounterpartyTopic,
+            PropertyTopic = _testSettings.PropertyTopic,
+            RequestTopic = _testSettings.RequestTopic
+        });
+
         var service = new DataGeneratorService(
             _publisher!,
             _serviceLoggerMock.Object,
-            batchSize: 3,
-            delayBetweenBatchesMs: 100);
+            serviceOptions);
 
         using var cts = new CancellationTokenSource();
 
@@ -117,7 +138,7 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         var subscription = Task.Run(async () =>
         {
-            await foreach (var msg in subscriber.SubscribeAsync<string>(DataGeneratorService.PropertyTopic))
+            await foreach (var msg in subscriber.SubscribeAsync<string>(_testSettings.PropertyTopic))
             {
                 if (!string.IsNullOrEmpty(msg.Data))
                 {
@@ -136,11 +157,20 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         await Task.Delay(100);
 
+        var serviceOptions = Options.Create(new DataGeneratorSettings
+        {
+            BatchSize = 3,
+            DelayBetweenBatchesMs = 100,
+            DelayBetweenMessagesMs = 100,
+            CounterpartyTopic = _testSettings.CounterpartyTopic,
+            PropertyTopic = _testSettings.PropertyTopic,
+            RequestTopic = _testSettings.RequestTopic
+        });
+
         var service = new DataGeneratorService(
             _publisher!,
             _serviceLoggerMock.Object,
-            batchSize: 3,
-            delayBetweenBatchesMs: 100);
+            serviceOptions);
 
         using var cts = new CancellationTokenSource();
 
@@ -173,7 +203,7 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         var counterpartySub = Task.Run(async () =>
         {
-            await foreach (var msg in subscriber.SubscribeAsync<string>(DataGeneratorService.CounterpartyTopic))
+            await foreach (var msg in subscriber.SubscribeAsync<string>(_testSettings.CounterpartyTopic))
             {
                 if (!string.IsNullOrEmpty(msg.Data))
                 {
@@ -185,7 +215,7 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         var propertySub = Task.Run(async () =>
         {
-            await foreach (var msg in subscriber.SubscribeAsync<string>(DataGeneratorService.PropertyTopic))
+            await foreach (var msg in subscriber.SubscribeAsync<string>(_testSettings.PropertyTopic))
             {
                 if (!string.IsNullOrEmpty(msg.Data))
                 {
@@ -205,11 +235,20 @@ public class DataGeneratorServiceTests : IAsyncLifetime
 
         await Task.Delay(100);
 
+        var serviceOptions = Options.Create(new DataGeneratorSettings
+        {
+            BatchSize = 5,
+            DelayBetweenBatchesMs = 100,
+            DelayBetweenMessagesMs = 100,
+            CounterpartyTopic = _testSettings.CounterpartyTopic,
+            PropertyTopic = _testSettings.PropertyTopic,
+            RequestTopic = _testSettings.RequestTopic
+        });
+
         var service = new DataGeneratorService(
             _publisher!,
             _serviceLoggerMock.Object,
-            batchSize: 5,
-            delayBetweenBatchesMs: 100);
+            serviceOptions);
 
         using var cts = new CancellationTokenSource();
 
@@ -227,11 +266,20 @@ public class DataGeneratorServiceTests : IAsyncLifetime
     [Fact]
     public async Task StopAsync_ShouldStopGracefully()
     {
+        var serviceOptions = Options.Create(new DataGeneratorSettings
+        {
+            BatchSize = 10,
+            DelayBetweenBatchesMs = 1000,
+            DelayBetweenMessagesMs = 100,
+            CounterpartyTopic = _testSettings.CounterpartyTopic,
+            PropertyTopic = _testSettings.PropertyTopic,
+            RequestTopic = _testSettings.RequestTopic
+        });
+
         var service = new DataGeneratorService(
             _publisher!,
             _serviceLoggerMock.Object,
-            batchSize: 10,
-            delayBetweenBatchesMs: 1000);
+            serviceOptions);
 
         using var cts = new CancellationTokenSource();
 
@@ -249,11 +297,20 @@ public class DataGeneratorServiceTests : IAsyncLifetime
     [Fact]
     public void Constructor_ShouldAcceptCustomParameters()
     {
+        var serviceOptions = Options.Create(new DataGeneratorSettings
+        {
+            BatchSize = 100,
+            DelayBetweenBatchesMs = 10000,
+            DelayBetweenMessagesMs = 100,
+            CounterpartyTopic = _testSettings.CounterpartyTopic,
+            PropertyTopic = _testSettings.PropertyTopic,
+            RequestTopic = _testSettings.RequestTopic
+        });
+
         var service = new DataGeneratorService(
             _publisher!,
             _serviceLoggerMock.Object,
-            batchSize: 100,
-            delayBetweenBatchesMs: 10000);
+            serviceOptions);
 
         service.Should().NotBeNull();
     }
@@ -267,18 +324,21 @@ public class DataGeneratorServiceTopicsTests
     [Fact]
     public void CounterpartyTopic_ShouldHaveCorrectValue()
     {
-        DataGeneratorService.CounterpartyTopic.Should().Be("realestate.counterparty.created");
+        var settings = new DataGeneratorSettings();
+        settings.CounterpartyTopic.Should().Be("realestate.counterparty.created");
     }
 
     [Fact]
     public void PropertyTopic_ShouldHaveCorrectValue()
     {
-        DataGeneratorService.PropertyTopic.Should().Be("realestate.property.created");
+        var settings = new DataGeneratorSettings();
+        settings.PropertyTopic.Should().Be("realestate.property.created");
     }
 
     [Fact]
     public void RequestTopic_ShouldHaveCorrectValue()
     {
-        DataGeneratorService.RequestTopic.Should().Be("realestate.request.created");
+        var settings = new DataGeneratorSettings();
+        settings.RequestTopic.Should().Be("realestate.request.created");
     }
 }

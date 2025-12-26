@@ -30,18 +30,6 @@ public static class ContractGenerator
         "Александровна", "Дмитриевна", "Сергеевна", "Андреевна", "Алексеевна", "Михайловна", "Владимировна", "Николаевна"
     ];
 
-    private static readonly string[] _russianCities =
-    [
-        "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
-        "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону"
-    ];
-
-    private static readonly string[] _russianStreets =
-    [
-        "Ленина", "Мира", "Советская", "Гагарина", "Пушкина", "Комсомольская",
-        "Центральная", "Победы", "Октябрьская", "Молодёжная", "Садовая", "Парковая"
-    ];
-
     private static readonly Faker _faker = new("ru");
 
     /// <summary>
@@ -57,7 +45,7 @@ public static class ContractGenerator
         {
             FullName = $"{lastName} {firstName} {patronymic}",
             PassportNumber = $"{_faker.Random.Number(1000, 9999)} {_faker.Random.Number(100000, 999999)}",
-            PhoneNumber = $"+7{_faker.Random.Number(900, 999)}{_faker.Random.Number(1000000, 9999999)}"
+            PhoneNumber = _faker.Phone.PhoneNumber("+7(9##)###-##-##")
         };
     }
 
@@ -76,10 +64,14 @@ public static class ContractGenerator
             _ => PropertyPurpose.Residential
         };
 
-        var city = _faker.PickRandom(_russianCities);
-        var street = _faker.PickRandom(_russianStreets);
-        var houseNumber = _faker.Random.Number(1, 150);
-        var apartment = propertyType == PropertyType.Apartment ? $", кв. {_faker.Random.Number(1, 500)}" : "";
+        var address = _faker.Address;
+        var city = address.City();
+        var street = address.StreetName();
+        var houseNumber = address.BuildingNumber();
+
+        var apartment = propertyType == PropertyType.Apartment
+            ? $", кв. {_faker.Random.Number(1, 500)}"
+            : "";
 
         var cadastralNumber = $"{_faker.Random.Number(10, 99)}:{_faker.Random.Number(10, 99)}:" +
                               $"{_faker.Random.Number(1000000, 9999999)}:{_faker.Random.Number(100, 999)}";
@@ -161,13 +153,4 @@ public static class ContractGenerator
             Property = GenerateProperty()
         };
     }
-}
-
-/// <summary>
-/// Пакет сгенерированных данных для отправки
-/// </summary>
-public class GeneratedDataPackage
-{
-    public required CreateCounterpartyDto Counterparty { get; init; }
-    public required CreateRealEstatePropertyDto Property { get; init; }
 }

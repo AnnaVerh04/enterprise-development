@@ -1,4 +1,5 @@
-﻿using RealEstateAgency.Generator.Generators;
+﻿using Microsoft.Extensions.Options;
+using RealEstateAgency.Generator.Generators;
 
 namespace RealEstateAgency.Generator.Services;
 
@@ -8,21 +9,17 @@ namespace RealEstateAgency.Generator.Services;
 public class DataGeneratorService(
     NatsPublisher natsPublisher,
     ILogger<DataGeneratorService> logger,
-    int batchSize = 10,
-    int delayBetweenBatchesMs = 5000) : BackgroundService
+    IOptions<DataGeneratorSettings> options) : BackgroundService
 {
     private readonly ILogger<DataGeneratorService> _logger = logger;
-    private readonly int _batchSize = batchSize;
-    public const string CounterpartyTopic = "realestate.counterparty.created";
-    public const string PropertyTopic = "realestate.property.created";
-    public const string RequestTopic = "realestate.request.created";
+    private readonly DataGeneratorSettings _settings = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation(
             "Запуск сервиса генерации данных. Размер пакета: {BatchSize}, задержка: {Delay}мс",
-            _batchSize,
-            delayBetweenBatchesMs);
+            _settings.BatchSize,
+            _settings.DelayBetweenBatchesMs);
 
         try
         {
@@ -36,15 +33,15 @@ public class DataGeneratorService(
             {
                 try
                 {
-                    await GenerateAndSendBatchAsync(_batchSize, stoppingToken);
+                    await GenerateAndSendBatchAsync(_settings.BatchSize, stoppingToken);
 
-                    totalGenerated += _batchSize;
+                    totalGenerated += _settings.BatchSize;
                     _logger.LogInformation(
                         "Сгенерировано и отправлено {BatchSize} контрактов. Всего: {Total}",
-                        _batchSize,
+                        _settings.BatchSize,
                         totalGenerated);
 
-                    await Task.Delay(delayBetweenBatchesMs, stoppingToken);
+                    await Task.Delay(_settings.DelayBetweenBatchesMs, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -75,15 +72,15 @@ public class DataGeneratorService(
     {
         await foreach (var data in GenerateDataStreamAsync(count).WithCancellation(cancellationToken))
         {
-            await natsPublisher.PublishAsync(CounterpartyTopic, data.Counterparty, cancellationToken);
+            await natsPublisher.PublishAsync(_settings.CounterpartyTopic, data.Counterparty, cancellationToken);
             _logger.LogDebug("Отправлен контрагент: {FullName}", data.Counterparty.FullName);
 
-            await Task.Delay(100, cancellationToken);
+            await Task.Delay(_settings.DelayBetweenMessagesMs, cancellationToken);
 
-            await natsPublisher.PublishAsync(PropertyTopic, data.Property, cancellationToken);
+            await natsPublisher.PublishAsync(_settings.PropertyTopic, data.Property, cancellationToken);
             _logger.LogDebug("Отправлена недвижимость: {Address}", data.Property.Address);
 
-            await Task.Delay(100, cancellationToken);
+            await Task.Delay(_settings.DelayBetweenMessagesMs, cancellationToken);
         }
     }
 

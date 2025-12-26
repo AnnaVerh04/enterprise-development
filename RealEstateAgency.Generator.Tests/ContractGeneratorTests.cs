@@ -46,8 +46,10 @@ public class ContractGeneratorTests
 
         counterparty.PhoneNumber.Should().StartWith("+7",
             "Российский номер должен начинаться с +7");
-        counterparty.PhoneNumber.Should().HaveLength(12,
-            "Номер телефона должен содержать 12 символов (+7XXXXXXXXXX)");
+
+        var cleanNumber = counterparty.PhoneNumber.Replace("+7", "").Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "");
+        cleanNumber.Should().MatchRegex(@"^[0-9]{10}$",
+            "Номер должен содержать 10 цифр после +7");
     }
 
     [Fact]

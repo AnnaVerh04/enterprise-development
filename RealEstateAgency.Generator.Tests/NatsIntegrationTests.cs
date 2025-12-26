@@ -76,9 +76,11 @@ public class NatsIntegrationTests : IAsyncLifetime
         await using var subscriber = new NatsConnection(options);
         await subscriber.ConnectAsync();
 
+        var testTopic = "test.counterparty.topic";
+
         var subscription = Task.Run(async () =>
         {
-            await foreach (var msg in subscriber.SubscribeAsync<string>("test.counterparty"))
+            await foreach (var msg in subscriber.SubscribeAsync<string>(testTopic))
             {
                 if (!string.IsNullOrEmpty(msg.Data))
                 {
@@ -94,7 +96,7 @@ public class NatsIntegrationTests : IAsyncLifetime
 
         await Task.Delay(100);
 
-        await _publisher.PublishAsync("test.counterparty", counterparty);
+        await _publisher.PublishAsync(testTopic, counterparty);
 
         var received = await receivedData.Task.WaitAsync(TimeSpan.FromSeconds(5));
         received.FullName.Should().Be(counterparty.FullName);
